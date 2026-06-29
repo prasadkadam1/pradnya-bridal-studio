@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pradnyabridalstudio.com/sitemap.xml
