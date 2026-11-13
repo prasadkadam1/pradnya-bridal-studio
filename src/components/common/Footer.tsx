@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Instagram, Heart, MessageCircle } from 'lucide-react';
 import { MEHENDI_ENABLED, STUDIO_NAME } from '../../config/siteFeatures';
+import studioLogo from '../../assets/studio-logo.png';
+import makeupLogo from '../../assets/ChatGPT Image Jun 28, 2026, 12_05_49 PM.png';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -23,12 +25,18 @@ export const Footer: React.FC = () => {
           
           {/* Studio Brand Intro */}
           <div className="flex flex-col space-y-4">
-            <Link to="/" className="flex flex-col">
-              <span className="font-serif text-2xl tracking-wider text-brand-gold font-bold leading-none">
-                PRADNYA
-              </span>
-              <span className="font-sans text-[10px] tracking-[0.3em] text-brand-gold/80 uppercase mt-0.5">
-                {MEHENDI_ENABLED ? 'Bridal Beauty Studio' : 'Bridal Makeup Studio'}
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src={MEHENDI_ENABLED ? studioLogo : makeupLogo}
+                alt=""
+                aria-hidden="true"
+                className="h-12 w-12 shrink-0 rounded-full border border-brand-gold/35 object-cover"
+              />
+              <span className="flex flex-col">
+                <span className="font-serif text-2xl tracking-wider text-brand-gold font-bold leading-none">PRADNYA</span>
+                <span className="font-sans text-[10px] tracking-[0.3em] text-brand-gold/80 uppercase mt-0.5">
+                  {MEHENDI_ENABLED ? 'Bridal Beauty Studio' : 'Bridal Makeup Studio'}
+                </span>
               </span>
             </Link>
             <p className="font-sans text-sm text-brand-ivory/70 leading-relaxed">

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Brush, ChevronRight, Menu, MessageCircle, Phone, X } from 'lucide-react';
+import { ChevronRight, Menu, MessageCircle, Phone, X } from 'lucide-react';
 import studioLogo from '../../assets/studio-logo.png';
+import makeupLogo from '../../assets/ChatGPT Image Jun 28, 2026, 12_05_49 PM.png';
 import { MEHENDI_ENABLED } from '../../config/siteFeatures';
 
 const NAV_ITEMS = [
@@ -57,8 +58,8 @@ export const Header: React.FC = () => {
 
   const logoBlock = (className: string, iconClassName: string, titleClassName: string, subtitleClassName: string) => (
     <Link to="/" onClick={closeDrawer} className={`flex min-w-0 items-center gap-3 ${className}`}>
-      <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-brand-gold/35 bg-brand-beige shadow-[0_6px_16px_rgba(20,53,37,0.08)]" aria-hidden="true">
-        {MEHENDI_ENABLED ? <img src={studioLogo} alt="" className="h-full w-full object-cover" /> : <Brush className={`text-brand-gold ${iconClassName}`} />}
+      <span className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-brand-gold/35 bg-brand-beige shadow-[0_6px_16px_rgba(20,53,37,0.08)] ${iconClassName}`} aria-hidden="true">
+        <img src={MEHENDI_ENABLED ? studioLogo : makeupLogo} alt="" className="h-full w-full object-cover" />
       </span>
 
       <span className="flex min-w-0 flex-col justify-center leading-none">
