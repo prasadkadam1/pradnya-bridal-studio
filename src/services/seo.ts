@@ -1,79 +1,71 @@
-/**
- * Dynamic SEO Meta Injections
- */
+import { STUDIO_NAME } from '../config/siteFeatures';
+
+const SITE_NAME = STUDIO_NAME;
+const SITE_URL = 'https://pradnyabridalstudio.com';
+const DEFAULT_OG_IMAGE = 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=85';
 
 interface MetaData {
   title: string;
   description: string;
-  ogType?: string;
+  ogType?: 'website' | 'article';
   ogImage?: string;
   canonicalUrl?: string;
+  robots?: string;
 }
+
+const ensureMeta = (selector: string, attribute: 'name' | 'property', key: string) => {
+  let element = document.head.querySelector<HTMLMetaElement>(selector);
+  if (!element) {
+    element = document.createElement('meta');
+    element.setAttribute(attribute, key);
+    document.head.appendChild(element);
+  }
+  return element;
+};
+
+export const getCanonicalUrl = (pathname = window.location.pathname) => {
+  const cleanPath = `/${pathname.split('/').filter(Boolean).map(encodeURIComponent).join('/')}`;
+  return cleanPath === '/' ? SITE_URL : `${SITE_URL}${cleanPath}`;
+};
+
+export const setRobotsDirectives = (content: string) => {
+  ensureMeta('meta[name="robots"]', 'name', 'robots').content = content;
+};
 
 export const updateSEOMetadata = ({
   title,
   description,
   ogType = 'website',
-  ogImage = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
-  canonicalUrl = window.location.href
+  ogImage = DEFAULT_OG_IMAGE,
+  canonicalUrl = getCanonicalUrl(),
+  robots = 'index,follow,max-image-preview:large',
 }: MetaData) => {
-  // Update Title
-  document.title = `${title} | Pradnya Bridal Studio Pune`;
+  const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME} Pune`;
+  document.title = fullTitle;
 
-  // Update Description
-  let metaDescription = document.querySelector('meta[name="description"]');
-  if (metaDescription) {
-    metaDescription.setAttribute('content', description);
-  } else {
-    metaDescription = document.createElement('meta');
-    metaDescription.setAttribute('name', 'description');
-    metaDescription.setAttribute('content', description);
-    document.head.appendChild(metaDescription);
-  }
+  ensureMeta('meta[name="description"]', 'name', 'description').content = description;
+  ensureMeta('meta[property="og:title"]', 'property', 'og:title').content = fullTitle;
+  ensureMeta('meta[property="og:description"]', 'property', 'og:description').content = description;
+  ensureMeta('meta[property="og:type"]', 'property', 'og:type').content = ogType;
+  ensureMeta('meta[property="og:url"]', 'property', 'og:url').content = canonicalUrl;
+  ensureMeta('meta[property="og:site_name"]', 'property', 'og:site_name').content = SITE_NAME;
+  const absoluteImage = ogImage.startsWith('http')
+    ? ogImage
+    : `${SITE_URL}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+  ensureMeta('meta[property="og:image"]', 'property', 'og:image').content = absoluteImage;
+  ensureMeta('meta[name="twitter:card"]', 'name', 'twitter:card').content = 'summary_large_image';
+  ensureMeta('meta[name="twitter:title"]', 'name', 'twitter:title').content = fullTitle;
+  ensureMeta('meta[name="twitter:description"]', 'name', 'twitter:description').content = description;
+  ensureMeta('meta[name="twitter:image"]', 'name', 'twitter:image').content = absoluteImage;
+  setRobotsDirectives(robots);
 
-  // Update OG:Title
-  let ogTitle = document.querySelector('meta[property="og:title"]');
-  if (!ogTitle) {
-    ogTitle = document.createElement('meta');
-    ogTitle.setAttribute('property', 'og:title');
-    document.head.appendChild(ogTitle);
-  }
-  ogTitle.setAttribute('content', title);
-
-  // Update OG:Description
-  let ogDesc = document.querySelector('meta[property="og:description"]');
-  if (!ogDesc) {
-    ogDesc = document.createElement('meta');
-    ogDesc.setAttribute('property', 'og:description');
-    document.head.appendChild(ogDesc);
-  }
-  ogDesc.setAttribute('content', description);
-
-  // Update OG:Type
-  let ogTypeTag = document.querySelector('meta[property="og:type"]');
-  if (!ogTypeTag) {
-    ogTypeTag = document.createElement('meta');
-    ogTypeTag.setAttribute('property', 'og:type');
-    document.head.appendChild(ogTypeTag);
-  }
-  ogTypeTag.setAttribute('content', ogType);
-
-  // Update OG:Image
-  let ogImg = document.querySelector('meta[property="og:image"]');
-  if (!ogImg) {
-    ogImg = document.createElement('meta');
-    ogImg.setAttribute('property', 'og:image');
-    document.head.appendChild(ogImg);
-  }
-  ogImg.setAttribute('content', ogImage);
-
-  // Update Canonical Link
-  let canonicalLink = document.querySelector('link[rel="canonical"]');
+  let canonicalLink = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
   if (!canonicalLink) {
     canonicalLink = document.createElement('link');
-    canonicalLink.setAttribute('rel', 'canonical');
+    canonicalLink.rel = 'canonical';
     document.head.appendChild(canonicalLink);
   }
-  canonicalLink.setAttribute('href', canonicalUrl);
+  canonicalLink.href = canonicalUrl;
 };
+
 export default updateSEOMetadata;

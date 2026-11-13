@@ -8,6 +8,27 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    function validPublicTestimonial() {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'clientName', 'starRating', 'reviewText', 'weddingDate', 'category',
+          'isFeatured', 'location', 'createdAt', 'status'
+        ])
+        && data.keys().hasOnly([
+          'clientName', 'starRating', 'reviewText', 'weddingDate', 'category',
+          'isFeatured', 'location', 'createdAt', 'status'
+        ])
+        && data.clientName is string && data.clientName.size() >= 2 && data.clientName.size() <= 80
+        && data.starRating is int && data.starRating >= 1 && data.starRating <= 5
+        && data.reviewText is string && data.reviewText.size() >= 10 && data.reviewText.size() <= 2000
+        && data.weddingDate is string && data.weddingDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.category in ['mehendi', 'makeup', 'both']
+        && data.location is string && data.location.size() >= 1 && data.location.size() <= 80
+        && data.createdAt is string && data.createdAt.size() <= 40
+        && data.isFeatured == false
+        && data.status == 'pending';
+    }
+
     // inquiries can be created by anyone, but read/write only by admin
     match /inquiries/{inquiryId} {
       allow create: if true;
@@ -30,8 +51,9 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     match /testimonials/{testimonialId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read: if isAdmin() || resource.data.status == 'approved';
+      allow create: if isAdmin() || validPublicTestimonial();
+      allow update, delete: if isAdmin();
     }
     match /blogs/{blogId} {
       allow read: if true;

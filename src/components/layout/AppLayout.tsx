@@ -3,8 +3,9 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '../common/Header';
 import { Footer } from '../common/Footer';
 import { FloatingCTA } from '../ui/FloatingCTA';
-import updateSEOMetadata from '../../services/seo';
-import { getBreadcrumbSchema, getLocalBusinessSchema } from '../../utils/schemaMarkup';
+import updateSEOMetadata, { getCanonicalUrl } from '../../services/seo';
+import { getBreadcrumbSchema, getLocalBusinessSchema, getWebSiteSchema } from '../../utils/schemaMarkup';
+import { MEHENDI_ENABLED, STUDIO_NAME } from '../../config/siteFeatures';
 
 export const AppLayout: React.FC = () => {
   const { pathname } = useLocation();
@@ -15,55 +16,59 @@ export const AppLayout: React.FC = () => {
   }, [pathname]);
 
   useEffect(() => {
+    const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
     const pageMap: Record<string, { title: string; description: string }> = {
       '/': {
-        title: 'Luxury Bridal Mehendi & Makeup Services in Pune',
-        description: 'Premium bridal mehendi, makeup, hair styling, and saree draping in Pune, PCMC, Hinjewadi, Wakad, and nearby wedding locations.',
+        title: MEHENDI_ENABLED ? 'Luxury Bridal Mehendi & Makeup Services in Pune' : 'Bridal Makeup Artist & Hair Styling in Pune',
+        description: MEHENDI_ENABLED ? 'Premium bridal mehendi, makeup, hair styling, and saree draping in Pune, PCMC, Hinjewadi, Wakad, and nearby wedding locations.' : 'Bridal makeup, reception glam, hair styling, and saree draping in Pune, PCMC, Hinjewadi, Wakad, and nearby wedding locations.',
       },
       '/services': {
-        title: 'Bridal Beauty Services',
-        description: 'Explore bridal mehendi, bridal makeup, engagement looks, family mehendi, reception makeup, party makeup, and hair styling.',
+        title: MEHENDI_ENABLED ? 'Bridal Mehendi, Makeup & Hair Styling Services' : 'Bridal Makeup, Reception Glam & Hair Styling',
+        description: MEHENDI_ENABLED ? 'Explore bridal mehendi, bridal makeup, engagement looks, family mehendi, reception makeup, party makeup and hair styling in Pune.' : 'Explore HD bridal makeup, airbrush looks, engagement styling, reception makeup, and professional hair styling in Pune.',
       },
       '/portfolio': {
-        title: 'Bridal Portfolio',
-        description: 'Browse premium bridal mehendi and makeup transformations in a luxury Pinterest-style gallery.',
+        title: MEHENDI_ENABLED ? 'Bridal Mehendi & Makeup Portfolio' : 'Bridal Makeup Portfolio',
+        description: MEHENDI_ENABLED ? 'Browse real bridal mehendi designs, makeup looks and wedding transformations by Pradnya Bridal Studio in Pune.' : 'Browse bridal makeup, reception glam, and wedding transformations by Pradnya Bridal Makeup Studio in Pune.',
       },
       '/before-after': {
         title: 'Before and After Transformations',
         description: 'See real bridal beauty transformations with interactive before and after comparisons.',
       },
       '/packages': {
-        title: 'Bridal Packages',
-        description: 'Compare premium bridal mehendi and makeup packages for intimate functions and full wedding ceremonies.',
+        title: MEHENDI_ENABLED ? 'Bridal Packages' : 'Bridal Makeup Packages',
+        description: MEHENDI_ENABLED ? 'Compare premium bridal mehendi and makeup packages for intimate functions and full wedding ceremonies.' : 'Compare bridal makeup and hair styling packages for wedding ceremonies, receptions, and celebrations.',
       },
       '/about': {
-        title: 'About Pradnya Bridal Studio',
-        description: 'Meet the artist behind the studio, with experience, values, certifications, and a bridal-first philosophy.',
+        title: `About ${STUDIO_NAME}`,
+        description: 'Meet Pradnya Kadam and learn about her bridal makeup artistry, experience, and client-first approach.',
       },
       '/testimonials': {
-        title: 'Client Testimonials',
-        description: 'Read verified bridal reviews, stories, and star-rated testimonials from Pune brides.',
-      },
-      '/blog': {
-        title: 'Bridal Beauty Blog',
-        description: 'SEO-friendly bridal beauty advice, wedding prep tips, and Pune wedding trends.',
+        title: MEHENDI_ENABLED ? 'Bridal Makeup & Mehendi Reviews' : 'Bridal Makeup Reviews',
+        description: `Read approved client reviews and wedding stories from clients of ${STUDIO_NAME} in Pune.`,
       },
       '/contact': {
-        title: 'Contact Pradnya Bridal Studio',
+        title: `Contact ${STUDIO_NAME}`,
         description: 'Send an inquiry, call, WhatsApp, or find the studio in Shivajinagar, Pune.',
       },
       '/availability': {
-        title: 'Check Availability',
-        description: 'Check wedding date availability and submit your bridal inquiry in seconds.',
+        title: 'Check Bridal Artist Availability',
+        description: MEHENDI_ENABLED ? 'Check your wedding date and enquire about bridal mehendi, makeup and styling availability in Pune.' : 'Check your wedding date and enquire about bridal makeup and styling availability in Pune.',
       },
     };
 
-    const metadata = pageMap[pathname] || pageMap['/'];
-    updateSEOMetadata({
-      title: metadata.title,
-      description: metadata.description,
-      canonicalUrl: `${window.location.origin}${pathname}`,
-    });
+    const serviceSlug = normalizedPathname.startsWith('/services/') ? normalizedPathname.split('/').filter(Boolean).at(-1) : undefined;
+    const metadata = pageMap[normalizedPathname]
+      || (serviceSlug ? { title: MEHENDI_ENABLED ? `${serviceSlug.replaceAll('-', ' ')} Bridal Beauty Service` : 'Bridal Makeup Services in Pune', description: `Explore bridal beauty service details, pricing, and booking information from ${STUDIO_NAME} in Pune.` } : undefined)
+      || pageMap['/'];
+    const canonicalUrl = getCanonicalUrl(normalizedPathname);
+    // Dynamic detail pages set metadata from their loaded Firestore records.
+    if (!serviceSlug) {
+      updateSEOMetadata({
+        title: metadata.title,
+        description: metadata.description,
+        canonicalUrl,
+      });
+    }
 
     const schemaScriptId = 'local-business-schema';
     const existingSchema = document.getElementById(schemaScriptId);
@@ -71,26 +76,21 @@ export const AppLayout: React.FC = () => {
       existingSchema.remove();
     }
 
-    const localBusinessSchema = document.createElement('script');
-    localBusinessSchema.type = 'application/ld+json';
-    localBusinessSchema.id = schemaScriptId;
-    localBusinessSchema.textContent = JSON.stringify(getLocalBusinessSchema());
-    document.head.appendChild(localBusinessSchema);
+    const breadcrumbItems = [{ name: 'Home', url: getCanonicalUrl('/') }];
+    if (serviceSlug) breadcrumbItems.push({ name: 'Services', url: getCanonicalUrl('/services') });
+    if (normalizedPathname !== '/') breadcrumbItems.push({ name: metadata.title, url: canonicalUrl });
 
-    const breadcrumbSchema = document.createElement('script');
-    breadcrumbSchema.type = 'application/ld+json';
-    breadcrumbSchema.id = `${schemaScriptId}-breadcrumbs`;
-    breadcrumbSchema.textContent = JSON.stringify(
-      getBreadcrumbSchema([
-        { name: 'Home', url: `${window.location.origin}/` },
-        { name: metadata.title, url: `${window.location.origin}${pathname}` },
-      ])
-    );
-    document.head.appendChild(breadcrumbSchema);
+    const schema = document.createElement('script');
+    schema.type = 'application/ld+json';
+    schema.id = schemaScriptId;
+    schema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [getLocalBusinessSchema(), getWebSiteSchema(), getBreadcrumbSchema(breadcrumbItems)],
+    });
+    document.head.appendChild(schema);
 
     return () => {
       document.getElementById(schemaScriptId)?.remove();
-      document.getElementById(`${schemaScriptId}-breadcrumbs`)?.remove();
     };
   }, [pathname]);
 

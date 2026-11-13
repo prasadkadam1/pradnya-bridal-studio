@@ -5,12 +5,16 @@ import { Button } from '../components/common/Button';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Divider } from '../components/common/Divider';
 import { Clock } from 'lucide-react';
+import { isPublicServiceEnabled, MEHENDI_ENABLED } from '../config/siteFeatures';
 
 export const Services: React.FC = () => {
   const { data: services, isLoading } = useServices();
+  console.log('Services data:', services);
   const [activeCategory, setActiveCategory] = useState<'all' | 'mehendi' | 'makeup' | 'styling'>('all');
+  const visibleServices = services?.filter(isPublicServiceEnabled) || [];
+  const categories = MEHENDI_ENABLED ? ['all', 'mehendi', 'makeup', 'styling'] as const : ['all', 'makeup', 'styling'] as const;
 
-  const filteredServices = services?.filter(s => {
+  const filteredServices = visibleServices.filter(s => {
     if (activeCategory === 'all') return true;
     return s.category === activeCategory;
   }) || [];
@@ -33,7 +37,7 @@ export const Services: React.FC = () => {
 
         {/* Category Filters */}
         <div className="flex flex-wrap justify-center gap-3 mb-16">
-          {(['all', 'mehendi', 'makeup', 'styling'] as const).map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -66,11 +70,18 @@ export const Services: React.FC = () => {
               >
                 {/* Image Section */}
                 <div className="w-full sm:w-48 h-56 shrink-0 rounded overflow-hidden border border-brand-gold/15 relative">
-                  <img 
-                    src={service.portfolioExamples?.[0] || "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=400&q=80"} 
-                    alt={service.title} 
-                    className="w-full h-full object-cover"
-                  />
+                  {service.portfolioExamples?.[0] ? (
+                    <img
+                      src={service.portfolioExamples[0]}
+                      alt={service.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-brand-green-dark/5 px-4 text-center">
+                      <span className="font-sans text-[10px] uppercase tracking-widest text-brand-green-dark/55">Image coming soon</span>
+                    </div>
+                  )}
                   <div className="absolute bottom-2 left-2 bg-brand-green-dark/90 text-brand-gold text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 rounded">
                     {service.category}
                   </div>

@@ -59,7 +59,7 @@ export const seedStudioContent = async () => {
     await seedCollectionIfEmpty('portfolio', DEFAULT_PORTFOLIO.map((item) => ({ ...item })))
   );
   results.push(
-    await seedCollectionIfEmpty('testimonials', DEFAULT_TESTIMONIALS.map((item) => ({ ...item })))
+    await seedCollectionIfEmpty('testimonials', DEFAULT_TESTIMONIALS.map((item) => ({ ...item, status: 'approved' })))
   );
   results.push(await seedCollectionIfEmpty('blogs', DEFAULT_BLOGS.map((item) => ({ ...item }))));
   results.push(

@@ -1,3 +1,5 @@
+import { STUDIO_NAME } from '../config/siteFeatures';
+
 /**
  * SEO Schema Markup Utilities (JSON-LD)
  * Target Areas: Pune, Talegaon, Pimpri-Chinchwad, Hinjewadi, Wakad
@@ -7,10 +9,11 @@ export const getLocalBusinessSchema = () => {
   return {
     "@context": "https://schema.org",
     "@type": "BeautySalon",
-    "name": "Pradnya Bridal Beauty Studio",
+    "name": STUDIO_NAME,
+    "telephone": "+917040496065",
     "image": [
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80"
     ],
     "@id": "https://pradnyabridalstudio.com/#beauty-salon",
     "url": "https://pradnyabridalstudio.com",
@@ -61,6 +64,22 @@ export const getLocalBusinessSchema = () => {
       {
         "@type": "AdministrativeArea",
         "name": "Hinjewadi"
+      },
+      {
+        "@type": "AdministrativeArea",
+        "name": "Wakad"
+      },
+      {
+        "@type": "AdministrativeArea",
+        "name": "Baner"
+      },
+      {
+        "@type": "AdministrativeArea",
+        "name": "Chakan"
+      },
+      {
+        "@type": "AdministrativeArea",
+        "name": "Nigdi"
       }
     ]
   };
@@ -78,3 +97,47 @@ export const getBreadcrumbSchema = (items: { name: string; url: string }[]) => {
     }))
   };
 };
+
+export const getWebSiteSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": STUDIO_NAME,
+  "url": "https://pradnyabridalstudio.com/",
+  "inLanguage": "en-IN",
+});
+
+export const getArticleSchema = (article: {
+  title: string;
+  description: string;
+  url: string;
+  image?: string;
+  datePublished: string;
+  author: string;
+}) => ({
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": article.title,
+  "description": article.description,
+  "mainEntityOfPage": { "@type": "WebPage", "@id": article.url },
+  "image": article.image || undefined,
+  "datePublished": article.datePublished,
+  "author": { "@type": "Person", "name": article.author },
+  "publisher": { "@type": "Organization", "name": STUDIO_NAME, "url": "https://pradnyabridalstudio.com/" },
+});
+
+export const getServiceSchema = (service: {
+  title: string;
+  description: string;
+  url: string;
+  price: number;
+}) => ({
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": service.title,
+  "description": service.description,
+  "url": service.url,
+  "provider": { "@type": "BeautySalon", "name": STUDIO_NAME, "url": "https://pradnyabridalstudio.com/" },
+  "areaServed": { "@type": "City", "name": "Pune" },
+  "offers": { "@type": "Offer", "priceCurrency": "INR", "price": service.price },
+});
+

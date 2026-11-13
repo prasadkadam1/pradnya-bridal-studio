@@ -14,8 +14,6 @@ const BeforeAfter = lazy(() => import('./pages/BeforeAfter'));
 const Packages = lazy(() => import('./pages/Packages'));
 const About = lazy(() => import('./pages/About'));
 const Testimonials = lazy(() => import('./pages/Testimonials'));
-const Blog = lazy(() => import('./pages/Blog'));
-const BlogPost = lazy(() => import('./pages/BlogPost'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Availability = lazy(() => import('./pages/Availability'));
 
@@ -53,8 +51,6 @@ export const App: React.FC = () => {
               <Route path="packages" element={<Packages />} />
               <Route path="about" element={<About />} />
               <Route path="testimonials" element={<Testimonials />} />
-              <Route path="blog" element={<Blog />} />
-              <Route path="blog/:slug" element={<BlogPost />} />
               <Route path="contact" element={<Contact />} />
               <Route path="availability" element={<Availability />} />
             </Route>

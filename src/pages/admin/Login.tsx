@@ -6,6 +6,7 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { KeyRound, UserCheck, AlertCircle } from 'lucide-react';
+import { setRobotsDirectives } from '../../services/seo';
 
 interface LoginFormInputs {
   email: string;
@@ -24,6 +25,11 @@ export const Login: React.FC = () => {
       password: ''
     }
   });
+
+  React.useEffect(() => {
+    setRobotsDirectives('noindex,nofollow');
+    return () => setRobotsDirectives('index,follow,max-image-preview:large');
+  }, []);
 
   // If already logged in, redirect
   React.useEffect(() => {
@@ -59,7 +65,7 @@ export const Login: React.FC = () => {
             PRADNYA
           </span>
           <span className="font-sans text-[10px] tracking-[0.35em] text-brand-gold-champagne uppercase mt-1">
-            Studio Management
+            Bridal Makeup Studio Management
           </span>
         </div>
 

@@ -138,8 +138,26 @@ export const mockDb = {
     writeState(state);
     return true;
   },
+  updatePortfolioItem: async (id: string, data: Partial<PortfolioItem>) => {
+    const state = readState();
+    const current = state.portfolio.find((item) => item.id === id);
+    if (!current) throw new Error('Portfolio item not found.');
+    const nextItem = { ...current, ...data, id } as PortfolioItem;
+    setCollection(state, 'portfolio', upsertById(state.portfolio, nextItem));
+    writeState(state);
+    return nextItem;
+  },
 
   getTestimonials: async () => sortByNewest(clone(readState().testimonials)),
+  updateTestimonialStatus: async (id: string, status: 'pending' | 'approved' | 'rejected') => {
+    const state = readState();
+    const current = state.testimonials.find((item) => item.id === id);
+    if (!current) throw new Error('Review not found.');
+    const next = { ...current, status };
+    setCollection(state, 'testimonials', upsertById(state.testimonials, next));
+    writeState(state);
+    return { id, status };
+  },
   addTestimonial: async (item: Omit<Testimonial, 'id' | 'createdAt'>) => {
     const state = readState();
     const nextItem: Testimonial = {

@@ -1,10 +1,11 @@
 import React from 'react';
 import { Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { DEFAULT_EVENT_TYPE, STUDIO_NAME } from '../../config/siteFeatures';
 
 export const FloatingCTA: React.FC = () => {
   // Pre-filled WhatsApp message for bridal inquiries
-  const whatsappUrl = "https://wa.me/917040496065?text=Hi%20Pradnya%20Bridal%20Studio%20Team%2C%20I%20visited%20your%20website%20and%20would%20love%20to%20inquire%20about%20your%20Mehendi%20and%20Makeup%20packages%20for%20my%20wedding%21";
+  const whatsappUrl = `https://wa.me/917040496065?text=${encodeURIComponent(`Hi ${STUDIO_NAME}, I visited your website and would like to enquire about ${DEFAULT_EVENT_TYPE} for my wedding.`)}`;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center space-y-4 pointer-events-none">

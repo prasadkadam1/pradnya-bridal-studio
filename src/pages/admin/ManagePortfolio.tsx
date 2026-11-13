@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
-import { usePortfolio, useAddPortfolio, useDeletePortfolio } from '../../hooks/useFirestore';
-import { useStorage } from '../../hooks/useStorage';
+import { usePortfolio, useAddPortfolio, useDeletePortfolio, useUpdatePortfolio } from '../../hooks/useFirestore';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { ImagePlus, Trash2, X } from 'lucide-react';
 import type { PortfolioCategory } from '../../types/studio';
+import { hasPortfolioImage, isTemporaryPortfolioImage } from '../../utils/portfolioImages';
+import { deletePortfolioImageIfUnreferenced, uploadPortfolioImage, validatePortfolioImage } from '../../services/portfolioImageService';
+import { MEHENDI_ENABLED } from '../../config/siteFeatures';
 
 export const ManagePortfolio: React.FC = () => {
   const { data: portfolioItems, isLoading } = usePortfolio();
   const addPortfolioMutation = useAddPortfolio();
   const deletePortfolioMutation = useDeletePortfolio();
-  const { uploadFile, progress, uploading, error: storageError } = useStorage();
-
+  const updatePortfolioMutation = useUpdatePortfolio();
   const [activeCategory, setActiveCategory] = useState('all');
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Form Fields
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<PortfolioCategory>('bridal-mehendi');
+  const [category, setCategory] = useState<PortfolioCategory>(MEHENDI_ENABLED ? 'bridal-mehendi' : 'bridal-makeup');
   const [description, setDescription] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
@@ -33,12 +36,22 @@ export const ManagePortfolio: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      try {
+        validatePortfolioImage(selectedFile);
+      } catch (error) {
+        setUploadError(error instanceof Error ? error.message : 'Invalid image file.');
+        e.target.value = '';
+        return;
+      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
+      setUploadError(null);
     }
   };
 
   const handleClearForm = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setFile(null);
     setPreviewUrl(null);
     setTitle('');
@@ -58,9 +71,12 @@ export const ManagePortfolio: React.FC = () => {
       return;
     }
 
+    let downloadUrl: string | null = null;
     try {
       // 1. Upload file and obtain URL
-      const downloadUrl = await uploadFile(file, 'portfolio');
+      setUploadError(null);
+      setUploadProgress(0);
+      downloadUrl = await uploadPortfolioImage(file, 'portfolio-items', setUploadProgress);
       
       // 2. Parse tags
       const tags = tagsInput
@@ -81,8 +97,13 @@ export const ManagePortfolio: React.FC = () => {
       handleClearForm();
       alert("Portfolio item uploaded successfully!");
     } catch (err) {
+      if (downloadUrl) {
+        await Promise.allSettled([deletePortfolioImageIfUnreferenced(downloadUrl, 'portfolio-items')]);
+      }
       console.error("Failed to upload portfolio item:", err);
-      alert("Failed to upload. See console logs.");
+      setUploadError(err instanceof Error ? err.message : 'Failed to upload portfolio item.');
+    } finally {
+      setUploadProgress(null);
     }
   };
 
@@ -93,6 +114,14 @@ export const ManagePortfolio: React.FC = () => {
       } catch (err) {
         console.error("Failed to delete portfolio item:", err);
       }
+    }
+  };
+
+  const clearTemporaryImage = async (id: string) => {
+    try {
+      await updatePortfolioMutation.mutateAsync({ id, data: { imageUrl: '' } });
+    } catch (err) {
+      console.error('Failed to clear temporary portfolio image:', err);
     }
   };
 
@@ -127,7 +156,7 @@ export const ManagePortfolio: React.FC = () => {
             <form onSubmit={handleUploadSubmit} className="space-y-4">
               
               {/* Image picker box */}
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-brand-gold/30 hover:border-brand-gold rounded p-4 text-center cursor-pointer bg-brand-beige/10 relative overflow-hidden aspect-[4/3]">
+              <div className="mx-auto flex w-full max-w-[260px] flex-col items-center justify-center border-2 border-dashed border-brand-gold/30 hover:border-brand-gold rounded p-4 text-center cursor-pointer bg-brand-beige/10 relative overflow-hidden aspect-[9/16]">
                 {previewUrl ? (
                   <>
                     <img src={previewUrl} alt="Upload Preview" className="absolute inset-0 w-full h-full object-cover" />
@@ -159,20 +188,20 @@ export const ManagePortfolio: React.FC = () => {
               </div>
 
               {/* Upload Progress */}
-              {uploading && (
+              {uploadProgress !== null && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-sans text-brand-charcoal/60">
                     <span>Uploading file...</span>
-                    <span>{progress}%</span>
+                    <span>{uploadProgress}%</span>
                   </div>
                   <div className="w-full bg-brand-beige h-1.5 rounded overflow-hidden">
-                    <div className="bg-brand-green h-full" style={{ width: `${progress}%` }} />
+                    <div className="bg-brand-green h-full" style={{ width: `${uploadProgress}%` }} />
                   </div>
                 </div>
               )}
 
-              {storageError && (
-                <p className="text-[10px] font-sans text-red-500 mt-1">{storageError}</p>
+              {uploadError && (
+                <p className="text-[10px] font-sans text-red-500 mt-1">{uploadError}</p>
               )}
 
               <Input
@@ -233,7 +262,7 @@ export const ManagePortfolio: React.FC = () => {
                   type="submit" 
                   variant="primary" 
                   className="w-1/2 justify-center shadow-lg"
-                  disabled={uploading || !file || !title}
+                  disabled={uploadProgress !== null || !file || !title}
                 >
                   Upload Item
                 </Button>
@@ -278,8 +307,14 @@ export const ManagePortfolio: React.FC = () => {
               {filteredItems.map((item) => (
                 <GlassCard key={item.id} className="bg-brand-ivory border-brand-gold/15 p-4 flex flex-col" hoverEffect={false}>
                   {/* Photo Frame */}
-                  <div className="aspect-[4/3] w-full rounded overflow-hidden mb-4 border border-brand-gold/10 relative">
-                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                  <div className="aspect-[9/16] w-full rounded overflow-hidden mb-4 border border-brand-gold/10 relative">
+                    {hasPortfolioImage(item.imageUrl) ? (
+                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-brand-green-dark/5 px-4 text-center">
+                        <span className="font-sans text-[10px] uppercase tracking-widest text-brand-green-dark/55">Image coming soon</span>
+                      </div>
+                    )}
                     {item.isFeatured && (
                       <div className="absolute top-2 left-2 bg-brand-gold text-brand-green-dark text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 rounded shadow">
                         Featured
@@ -315,6 +350,16 @@ export const ManagePortfolio: React.FC = () => {
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
+                    {isTemporaryPortfolioImage(item.imageUrl) && (
+                      <button
+                        onClick={() => clearTemporaryImage(item.id)}
+                        className="text-[9px] font-sans text-brand-green underline underline-offset-2"
+                        disabled={updatePortfolioMutation.isPending}
+                        title="Remove this obsolete temporary image URL"
+                      >
+                        Clear old image
+                      </button>
+                    )}
                   </div>
                 </GlassCard>
               ))}

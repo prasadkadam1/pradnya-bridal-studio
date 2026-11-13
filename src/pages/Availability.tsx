@@ -6,6 +6,7 @@ import { Button } from '../components/common/Button';
 import { Divider } from '../components/common/Divider';
 import { GlassCard } from '../components/ui/GlassCard';
 import { CalendarDays, AlertTriangle, CheckCircle, MessageSquare } from 'lucide-react';
+import { DEFAULT_EVENT_TYPE, MEHENDI_ENABLED } from '../config/siteFeatures';
 
 interface AvailabilityFormInputs {
   name: string;
@@ -34,7 +35,7 @@ export const Availability: React.FC = () => {
       phone: '',
       whatsappNumber: '',
       email: '',
-      eventType: 'Bridal Mehendi & Makeup Combo',
+      eventType: DEFAULT_EVENT_TYPE,
       eventDate: '',
       location: '',
       message: ''
@@ -188,7 +189,7 @@ export const Availability: React.FC = () => {
                       <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                       <div>
                         <p className="font-serif text-base font-bold">Fully Booked / Reserved</p>
-                        <p className="font-sans text-xs text-red-700/90 mt-1">We are fully booked for bridal packages on this date. However, you can submit your details below to join the waiting list or inquire for bridesmaids-only henna packages.</p>
+                        <p className="font-sans text-xs text-red-700/90 mt-1">{MEHENDI_ENABLED ? 'We are fully booked for bridal packages on this date. You can submit your details to join the waiting list or ask about family mehendi services.' : 'We are fully booked for bridal makeup on this date. You can still submit your details to ask about another event date or join the waitlist.'}</p>
                       </div>
                     </div>
                   )}
@@ -238,9 +239,9 @@ export const Availability: React.FC = () => {
                       label="Event Type"
                       as="select"
                       options={[
-                        { value: 'Bridal Mehendi & Makeup Combo', label: 'Bridal Mehendi & Makeup Combo' },
+                        ...(MEHENDI_ENABLED ? [{ value: 'Bridal Mehendi & Makeup Combo', label: 'Bridal Mehendi & Makeup Combo' }] : []),
                         { value: 'Bridal Makeup Only', label: 'Bridal Makeup Only' },
-                        { value: 'Bridal Mehendi Only', label: 'Bridal Mehendi Only' },
+                        ...(MEHENDI_ENABLED ? [{ value: 'Bridal Mehendi Only', label: 'Bridal Mehendi Only' }] : []),
                         { value: 'Engagement/Reception', label: 'Engagement/Reception Styling' }
                       ]}
                       {...register('eventType')}

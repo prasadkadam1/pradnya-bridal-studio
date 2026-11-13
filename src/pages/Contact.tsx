@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAddInquiry } from '../hooks/useFirestore';
+import { DEFAULT_EVENT_TYPE, MEHENDI_ENABLED } from '../config/siteFeatures';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Divider } from '../components/common/Divider';
@@ -30,7 +31,7 @@ export const Contact: React.FC = () => {
       phone: '',
       whatsappNumber: '',
       email: '',
-      eventType: 'Bridal Mehendi & Makeup Combo',
+      eventType: DEFAULT_EVENT_TYPE,
       eventDate: '',
       location: '',
       budget: '20,000 - 35,000',
@@ -50,11 +51,13 @@ export const Contact: React.FC = () => {
   };
 
   const eventOptions = [
-    { value: 'Bridal Mehendi & Makeup Combo', label: 'Bridal Mehendi & Makeup Combo' },
+    ...(MEHENDI_ENABLED ? [{ value: 'Bridal Mehendi & Makeup Combo', label: 'Bridal Mehendi & Makeup Combo' }] : []),
     { value: 'Bridal Makeup Only', label: 'Bridal Makeup Only' },
-    { value: 'Bridal Mehendi Only', label: 'Bridal Mehendi Only' },
-    { value: 'Engagement Makeup/Mehendi', label: 'Engagement Makeup/Mehendi' },
-    { value: 'Family Mehendi/Makeup', label: 'Family Mehendi/Makeup' },
+    ...(MEHENDI_ENABLED ? [
+      { value: 'Bridal Mehendi Only', label: 'Bridal Mehendi Only' },
+      { value: 'Engagement Makeup/Mehendi', label: 'Engagement Makeup/Mehendi' },
+      { value: 'Family Mehendi/Makeup', label: 'Family Mehendi/Makeup' },
+    ] : []),
     { value: 'Reception/Party Glam', label: 'Reception/Party Glam' }
   ];
 
@@ -160,7 +163,7 @@ export const Contact: React.FC = () => {
             {/* Google Map Embed */}
             <div className="rounded overflow-hidden border border-brand-gold/20 shadow-md aspect-[4/3] sm:aspect-[16/10]">
               <iframe
-                title="Pradnya Bridal Studio Google Map"
+                title="Pradnya Bridal Makeup Studio Google Map"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3783.080517551042!2d73.84439061489283!3d18.525287687405234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c07be1555555%3A0xe5cdcdad22b7a9de!2sShivajinagar%2C%20Pune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1680000000000!5m2!1sen!2sin"
                 className="w-full h-full border-0"
                 allowFullScreen={true}
@@ -297,7 +300,7 @@ export const Contact: React.FC = () => {
                   <Input
                     label="Special Design Requests or Notes"
                     as="textarea"
-                    placeholder="Describe your design inspirations, doli portrait requirements, or makeup concerns..."
+                    placeholder={MEHENDI_ENABLED ? 'Describe your design inspirations, doli portrait requirements, or makeup concerns...' : 'Tell us about your preferred makeup style, outfit, skin concerns, or event timings...'}
                     error={errors.message?.message}
                     {...register('message')}
                   />

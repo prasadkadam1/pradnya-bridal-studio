@@ -15,11 +15,18 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Check if all essential keys are provided and not dummy placeholders
-export const isFirebaseConfigured = !!(
-  firebaseConfig.apiKey &&
-  firebaseConfig.apiKey !== 'YOUR_API_KEY' &&
-  firebaseConfig.projectId
+// Require the full Firebase client configuration before enabling live services.
+const requiredFirebaseValues = [
+  firebaseConfig.apiKey,
+  firebaseConfig.authDomain,
+  firebaseConfig.projectId,
+  firebaseConfig.storageBucket,
+  firebaseConfig.messagingSenderId,
+  firebaseConfig.appId,
+];
+
+export const isFirebaseConfigured = requiredFirebaseValues.every(
+  (value) => typeof value === 'string' && value.trim() !== '' && !value.startsWith('YOUR_'),
 );
 
 let app: FirebaseApp;
@@ -43,10 +50,10 @@ if (isFirebaseConfigured) {
     }
     console.log("Firebase initialized successfully in Live Mode.");
   } catch (error) {
-    console.error("Firebase initialization failed, falling back to Local Mock Mode:", error);
+    console.error("Firebase initialization failed. Live Firebase services are unavailable:", error);
   }
 } else {
-  console.log("Firebase credentials not configured. Running in Local Mock Mode (using localStorage).");
+  console.log("Firebase credentials are incomplete. Live Firebase services are unavailable.");
 }
 
 export { auth, db, storage, analytics };

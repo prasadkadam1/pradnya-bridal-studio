@@ -1,10 +1,11 @@
 import React from 'react';
-import { useTestimonials, useAddTestimonial, useDeleteTestimonial } from '../../hooks/useFirestore';
+import { useTestimonials, useAddTestimonial, useDeleteTestimonial, useUpdateTestimonialStatus } from '../../hooks/useFirestore';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Star, Trash2, Heart } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { MEHENDI_ENABLED } from '../../config/siteFeatures';
 
 interface TestimonialFormInputs {
   clientName: string;
@@ -20,6 +21,7 @@ export const ManageTestimonials: React.FC = () => {
   const { data: testimonials, isLoading } = useTestimonials();
   const addTestimonialMutation = useAddTestimonial();
   const deleteTestimonialMutation = useDeleteTestimonial();
+  const updateStatusMutation = useUpdateTestimonialStatus();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<TestimonialFormInputs>({
     defaultValues: {
@@ -27,7 +29,7 @@ export const ManageTestimonials: React.FC = () => {
       starRating: 5,
       reviewText: '',
       weddingDate: '',
-      category: 'both',
+      category: MEHENDI_ENABLED ? 'both' : 'makeup',
       isFeatured: true,
       location: ''
     }
@@ -37,7 +39,8 @@ export const ManageTestimonials: React.FC = () => {
     try {
       await addTestimonialMutation.mutateAsync({
         ...data,
-        starRating: Number(data.starRating)
+        starRating: Number(data.starRating),
+        status: 'approved',
       });
       reset();
       alert("Review added successfully!");
@@ -162,7 +165,7 @@ export const ManageTestimonials: React.FC = () => {
 
         {/* Right Column: Listing */}
         <div className="lg:col-span-7 space-y-6">
-          <h3 className="font-serif text-xl text-brand-green-dark font-bold">Verified Reviews</h3>
+          <h3 className="font-serif text-xl text-brand-green-dark font-bold">Submitted Reviews</h3>
 
           {isLoading ? (
             <div className="flex justify-center py-20">
@@ -187,6 +190,9 @@ export const ManageTestimonials: React.FC = () => {
                       <span className="text-[8px] bg-brand-beige text-brand-green-dark font-bold uppercase tracking-wider px-2 py-0.5 rounded">
                         {test.category}
                       </span>
+                      <span className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${test.status === 'approved' ? 'bg-green-100 text-green-800' : test.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {test.status ?? 'needs approval'}
+                      </span>
                       {test.isFeatured && (
                         <span className="text-[8px] bg-brand-gold text-brand-green-dark font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">
                           Featured
@@ -206,13 +212,29 @@ export const ManageTestimonials: React.FC = () => {
                     <p className="text-brand-charcoal/80 leading-relaxed italic">"{test.reviewText}"</p>
                   </div>
 
-                  <button
-                    onClick={() => handleDelete(test.id)}
-                    className="p-2 rounded bg-red-50 text-red-600 hover:bg-red-100 border border-red-150 transition-colors shrink-0"
-                    title="Delete Review"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex shrink-0 flex-col gap-2">
+                    {test.status !== 'approved' && (
+                      <button
+                        onClick={() => updateStatusMutation.mutate({ id: test.id, status: 'approved' })}
+                        disabled={updateStatusMutation.isPending}
+                        className="rounded bg-green-700 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-white disabled:opacity-50"
+                      >Approve</button>
+                    )}
+                    {test.status !== 'rejected' && (
+                      <button
+                        onClick={() => updateStatusMutation.mutate({ id: test.id, status: 'rejected' })}
+                        disabled={updateStatusMutation.isPending}
+                        className="rounded bg-yellow-100 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-yellow-900 disabled:opacity-50"
+                      >Reject</button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(test.id)}
+                      className="flex items-center justify-center gap-1 rounded bg-red-50 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-red-600 hover:bg-red-100 border border-red-150 transition-colors"
+                      title="Delete Review"
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

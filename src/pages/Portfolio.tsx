@@ -4,8 +4,10 @@ import { Divider } from '../components/common/Divider';
 import { Search, X, MessageSquare, ZoomIn, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PortfolioItem } from '../types/studio';
+import { hasPortfolioImage } from '../utils/portfolioImages';
+import { isPublicPortfolioEnabled, isPublicPortfolioCategoryEnabled, MEHENDI_ENABLED } from '../config/siteFeatures';
 
-const CATEGORIES = [
+const ALL_CATEGORIES = [
   { value: 'all', label: 'All Work' },
   { value: 'bridal-mehendi', label: 'Bridal Mehendi' },
   { value: 'arabic-mehendi', label: 'Arabic Mehendi' },
@@ -14,6 +16,9 @@ const CATEGORIES = [
   { value: 'reception-makeup', label: 'Reception Makeup' },
   { value: 'party-makeup', label: 'Party Makeup' }
 ];
+const CATEGORIES = ALL_CATEGORIES.filter((category) =>
+  isPublicPortfolioCategoryEnabled(category.value as PortfolioItem['category'] | 'all'),
+);
 
 export const Portfolio: React.FC = () => {
   const { data: portfolioItems, isLoading } = usePortfolio();
@@ -23,6 +28,7 @@ export const Portfolio: React.FC = () => {
 
   // Filter items based on Category & Search Query
   const filteredItems = portfolioItems?.filter(item => {
+    if (!isPublicPortfolioEnabled(item)) return false;
     const matchesCategory = selectedCat === 'all' || item.category === selectedCat;
     
     const searchText = `${item.title} ${item.description} ${item.tags?.join(' ')}`.toLowerCase();
@@ -39,10 +45,10 @@ export const Portfolio: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="font-sans text-xs tracking-widest uppercase text-brand-gold font-bold">Our Gallery</span>
           <h1 className="font-serif text-4xl sm:text-5xl text-brand-green-dark tracking-wide font-bold mt-2">
-            The Bridal Portfolio
+            Bridal Makeup Portfolio
           </h1>
           <p className="font-sans text-sm text-brand-charcoal/70 mt-3">
-            A visual anthology of our storytelling mehendi stains and customized makeup styles.
+            {MEHENDI_ENABLED ? 'A visual anthology of our mehendi artistry and customized makeup looks.' : 'Explore bridal makeup, reception glam, and occasion looks created for modern Pune brides.'}
           </p>
           <Divider variant="simple" />
         </div>
@@ -97,7 +103,7 @@ export const Portfolio: React.FC = () => {
             <p className="font-sans text-xs text-brand-charcoal/60 mt-1">Try resetting your filters or search query.</p>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 xl:columns-3 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredItems.map((item) => (
               <motion.div
                 key={item.id}
@@ -105,16 +111,15 @@ export const Portfolio: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="break-inside-avoid relative rounded border border-brand-gold/20 bg-brand-ivory shadow group overflow-hidden cursor-pointer"
+                className="relative aspect-[9/16] rounded border border-brand-gold/20 bg-brand-ivory shadow group overflow-hidden cursor-pointer"
                 onClick={() => setLightboxItem(item)}
               >
                 {/* Image */}
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  loading="lazy"
-                  className="w-full h-auto object-cover block transition-transform duration-500 group-hover:scale-[1.02]"
-                />
+                {hasPortfolioImage(item.imageUrl) ? (
+                  <img src={item.imageUrl} alt={item.title} loading="lazy" className="w-full h-full object-cover block transition-transform duration-500 group-hover:scale-[1.02]" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-brand-green-dark/5 px-4 text-center"><span className="font-sans text-[10px] uppercase tracking-widest text-brand-green-dark/55">Image coming soon</span></div>
+                )}
 
                 {/* Dark Hover overlay */}
                 <div className="absolute inset-0 bg-brand-green-dark/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-left">
@@ -179,11 +184,9 @@ export const Portfolio: React.FC = () => {
               
               {/* Image Pane */}
               <div className="flex-1 bg-black flex items-center justify-center overflow-hidden max-h-[50vh] md:max-h-[80vh]">
-                <img
-                  src={lightboxItem.imageUrl}
-                  alt={lightboxItem.title}
-                  className="max-w-full max-h-full object-contain"
-                />
+                {hasPortfolioImage(lightboxItem.imageUrl) ? (
+                  <img src={lightboxItem.imageUrl} alt={lightboxItem.title} className="max-w-full max-h-full object-contain" />
+                ) : <span className="font-sans text-xs uppercase tracking-widest text-brand-gold">Image coming soon</span>}
               </div>
 
               {/* Text Pane */}

@@ -1,14 +1,53 @@
 import React, { useState } from 'react';
-import { useTestimonials } from '../hooks/useFirestore';
+import { useForm } from 'react-hook-form';
+import { useAddTestimonial, usePublicTestimonials } from '../hooks/useFirestore';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Divider } from '../components/common/Divider';
-import { Star, Quote, MessageSquare, Calendar } from 'lucide-react';
+import { Star, Quote, Calendar, Send } from 'lucide-react';
+import { Input } from '../components/common/Input';
+import { Button } from '../components/common/Button';
+import { isPublicTestimonialEnabled, MEHENDI_ENABLED } from '../config/siteFeatures';
+
+interface ReviewFormInputs {
+  clientName: string;
+  starRating: number;
+  reviewText: string;
+  weddingDate: string;
+  category: 'mehendi' | 'makeup' | 'both';
+  location: string;
+}
 
 export const Testimonials: React.FC = () => {
-  const { data: testimonials, isLoading } = useTestimonials();
+  const { data: testimonials, isLoading } = usePublicTestimonials();
+  const addReviewMutation = useAddTestimonial();
   const [filter, setFilter] = useState<'all' | 'mehendi' | 'makeup' | 'both'>('all');
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ReviewFormInputs>({
+    defaultValues: { clientName: '', starRating: 5, reviewText: '', weddingDate: '', category: MEHENDI_ENABLED ? 'both' : 'makeup', location: '' }
+  });
 
-  const filteredReviews = testimonials?.filter(item => {
+  const onSubmitReview = async (data: ReviewFormInputs) => {
+    setSubmitError('');
+    try {
+      await addReviewMutation.mutateAsync({
+        ...data,
+        clientName: data.clientName.trim(),
+        reviewText: data.reviewText.trim(),
+        location: data.location.trim(),
+        starRating: Number(data.starRating),
+        isFeatured: false,
+        status: 'pending',
+      });
+      reset();
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Could not submit your review. Please try again.');
+    }
+  };
+
+  const publicReviews = testimonials?.filter(isPublicTestimonialEnabled) || [];
+  const filteredReviews = publicReviews.filter(item => {
     if (filter === 'all') return true;
     return item.category === filter;
   }) || [];
@@ -19,12 +58,12 @@ export const Testimonials: React.FC = () => {
         
         {/* Page Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="font-sans text-xs tracking-widest uppercase text-brand-gold font-bold">Bridal Stories</span>
+            <span className="font-sans text-xs tracking-widest uppercase text-brand-gold font-bold">Makeup Client Stories</span>
           <h1 className="font-serif text-4xl sm:text-5xl text-brand-green-dark tracking-wide font-bold mt-2">
             Client Experiences
           </h1>
           <p className="font-sans text-sm text-brand-charcoal/70 mt-3">
-            Read stories of love and transformation from the brides we have had the honor of styling.
+              Read client stories about their bridal makeup and celebration looks.
           </p>
           <Divider variant="simple" />
         </div>
@@ -32,27 +71,29 @@ export const Testimonials: React.FC = () => {
         {/* Aggregate Ratings Banner */}
         <div className="max-w-3xl mx-auto bg-brand-beige/35 rounded border border-brand-gold/25 p-6 sm:p-8 mb-16 grid grid-cols-1 md:grid-cols-3 items-center gap-6 text-center">
           <div className="flex flex-col">
-            <span className="font-serif text-5xl font-bold text-brand-green-dark">5.0</span>
+            <span className="font-serif text-5xl font-bold text-brand-green-dark">
+              {testimonials?.length ? (testimonials.reduce((sum, review) => sum + review.starRating, 0) / testimonials.length).toFixed(1) : '—'}
+            </span>
             <div className="flex justify-center space-x-0.5 mt-2">
               {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-brand-gold text-brand-gold" />)}
             </div>
-            <span className="font-sans text-[10px] uppercase text-brand-charcoal/50 mt-1">Average Star Rating</span>
+            <span className="font-sans text-[10px] uppercase text-brand-charcoal/50 mt-1">Average from approved reviews</span>
           </div>
 
           <div className="md:border-l md:border-r border-brand-gold/15 py-4 flex flex-col justify-center">
-            <span className="font-serif text-3xl font-bold text-brand-green-dark">1,200+</span>
-            <span className="font-sans text-[10px] uppercase tracking-wider text-brand-charcoal/65 mt-1">Happy Couples</span>
+            <span className="font-serif text-3xl font-bold text-brand-green-dark">{testimonials?.length ?? '—'}</span>
+            <span className="font-sans text-[10px] uppercase tracking-wider text-brand-charcoal/65 mt-1">Published Reviews</span>
           </div>
 
           <div className="flex flex-col justify-center">
-            <span className="font-serif text-3xl font-bold text-brand-green-dark">100%</span>
-            <span className="font-sans text-[10px] tracking-wider uppercase text-brand-charcoal/65 mt-1">Verified Stain Stain</span>
+            <span className="font-serif text-3xl font-bold text-brand-green-dark">{publicReviews.length}</span>
+            <span className="font-sans text-[10px] tracking-wider uppercase text-brand-charcoal/65 mt-1">Makeup Client Stories</span>
           </div>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {(['all', 'mehendi', 'makeup', 'both'] as const).map((cat) => (
+          {(MEHENDI_ENABLED ? ['all', 'mehendi', 'makeup', 'both'] as const : ['all', 'makeup'] as const).map((cat) => (
             <button
               key={cat}
               onClick={() => setFilter(cat)}
@@ -122,21 +163,37 @@ export const Testimonials: React.FC = () => {
           </div>
         )}
 
-        {/* CTA */}
-        <div className="mt-16 text-center">
-          <p className="font-sans text-xs text-brand-charcoal/70 mb-4">
-            Styled by Pradnya Kadam recently? Share your feedback with us!
-          </p>
-          <a
-            href="https://wa.me/917040496065?text=Hi%20Pradnya%2C%20I%27d%20like%20to%20send%20my%20wedding%20review%2Fphotos%21"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 py-3 px-6 rounded text-brand-green border border-brand-green text-xs uppercase tracking-widest font-semibold hover:bg-brand-green/5 transition-all"
-          >
-            <MessageSquare className="w-4.5 h-4.5 fill-current" />
-            <span>Send Feedback via WhatsApp</span>
-          </a>
-        </div>
+        {/* Customer review submission */}
+        <section className="mt-20 max-w-3xl mx-auto" aria-labelledby="review-form-heading">
+          <GlassCard className="bg-brand-beige/20 border-brand-gold/20 p-6 sm:p-8" hoverEffect={false}>
+            <div className="text-center mb-7">
+              <span className="font-sans text-xs tracking-widest uppercase text-brand-gold font-bold">Your Story Matters</span>
+              <h2 id="review-form-heading" className="font-serif text-2xl sm:text-3xl text-brand-green-dark font-bold mt-2">Share Your Experience</h2>
+              <p className="font-sans text-sm text-brand-charcoal/70 mt-2">Reviews are checked by our team before they appear on the site.</p>
+            </div>
+
+            {submitted ? (
+              <div role="status" className="rounded border border-green-200 bg-green-50 p-5 text-center text-sm text-green-800">
+                Thank you for sharing your feedback. It has been received and will be published after review.
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmitReview)} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <Input label="Your Name" error={errors.clientName?.message} {...register('clientName', { required: 'Please enter your name', minLength: { value: 2, message: 'Please enter at least 2 characters' }, maxLength: { value: 80, message: 'Name must be 80 characters or fewer' } })} />
+                  <Input label="Location" placeholder="e.g. Baner, Pune" error={errors.location?.message} {...register('location', { required: 'Please enter your location', maxLength: { value: 80, message: 'Location must be 80 characters or fewer' } })} />
+                <Input label="Service" as="select" options={MEHENDI_ENABLED ? [{ value: 'both', label: 'Mehendi & Makeup' }, { value: 'mehendi', label: 'Mehendi' }, { value: 'makeup', label: 'Makeup' }] : [{ value: 'makeup', label: 'Bridal Makeup' }]} {...register('category', { required: true })} />
+                  <Input label="Rating" as="select" options={[5, 4, 3, 2, 1].map((rating) => ({ value: String(rating), label: `${rating} ${rating === 1 ? 'Star' : 'Stars'}` }))} {...register('starRating', { valueAsNumber: true, required: true })} />
+                  <Input label="Wedding Date" type="date" error={errors.weddingDate?.message} {...register('weddingDate', { required: 'Please select your wedding date' })} />
+                </div>
+                <Input label="Your Review" as="textarea" rows={5} placeholder="Tell us about your experience..." error={errors.reviewText?.message} {...register('reviewText', { required: 'Please write your review', minLength: { value: 10, message: 'Please enter at least 10 characters' }, maxLength: { value: 2000, message: 'Review must be 2,000 characters or fewer' } })} />
+                {submitError && <p role="alert" className="text-sm text-red-700">{submitError}</p>}
+                <Button type="submit" variant="primary" className="w-full sm:w-auto justify-center" loading={addReviewMutation.isPending}>
+                  <Send className="w-4 h-4 mr-2" /> Submit Review
+                </Button>
+              </form>
+            )}
+          </GlassCard>
+        </section>
 
       </div>
     </div>

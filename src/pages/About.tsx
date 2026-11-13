@@ -4,19 +4,21 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/common/Button';
 import { Link } from 'react-router-dom';
 import { Award, Sparkles } from 'lucide-react';
+import { MEHENDI_ENABLED } from '../config/siteFeatures';
 
 export const About: React.FC = () => {
   const stats = [
     { label: "Brides Adorned", val: "1,200+" },
     { label: "Years in Industry", val: "8+" },
-    { label: "Positive Reviews", val: "100%" },
-    { label: "Organic Cones Used", val: "15K+" }
+    { label: "Makeup Techniques", val: "HD + Airbrush" },
+    { label: "Service Area", val: "Pune & PCMC" }
   ];
 
   const values = [
-    { title: "Artistic Customization", desc: "No two brides are identical. We design custom henna stories containing your portraits, wedding date, and motifs that match your unique love story." },
-    { title: "Pure Organic Hygiene", desc: "We prepare our mehendi paste fresh using premium Rajasthani leaves, eucalyptus oil, and lavender oil. Zero chemical dyes, zero risk of allergies." },
-    { title: "Flawless Punctuality", desc: "Wedding timelines are strict. Our team guarantees prompt arrival at your home or venue, ensuring makeup and hair styling finish well before the muhurat." }
+    { title: "A Look Made for You", desc: "We shape each makeup look around your features, outfit, personal style, and the atmosphere of your celebration." },
+    { title: "Professional Makeup Artistry", desc: "From skin preparation and HD makeup to airbrush finishes, we plan a polished look for your ceremony and photography." },
+    { title: "Considered Styling", desc: "We coordinate makeup, hair, and draping with your event timeline so you can feel prepared and confident." },
+    ...(MEHENDI_ENABLED ? [{ title: "Mehendi Artistry", desc: "Custom henna designs remain available when the mehendi service feature is enabled." }] : [])
   ];
 
   return (
@@ -51,7 +53,7 @@ export const About: React.FC = () => {
             </p>
             
             <p className="font-sans text-sm text-brand-charcoal/80 leading-relaxed space-y-4">
-              For over eight years, I have had the privilege of helping brides across Pune, Talegaon, and PCMC walk down the aisle looking radiant. What started as a passion for fine art and sketching slowly evolved into Pune's premier luxury studio specializing in traditional henna storytelling designs and high-definition makeup.
+              For over eight years, I have had the privilege of helping brides across Pune, Talegaon, and PCMC feel radiant on their wedding day. What began as a passion for fine art has grown into a bridal makeup practice focused on HD and airbrush makeup, hair styling, and thoughtful event preparation.
             </p>
             
             <p className="font-sans text-sm text-brand-charcoal/80 leading-relaxed">
@@ -130,14 +132,14 @@ export const About: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-6 rounded border border-brand-gold/15 flex items-start space-x-4 bg-brand-beige/10">
+          {MEHENDI_ENABLED && <div className="p-6 rounded border border-brand-gold/15 flex items-start space-x-4 bg-brand-beige/10">
             <Award className="w-8 h-8 text-brand-gold shrink-0" />
             <div>
               <h4 className="font-serif text-base text-brand-green font-bold">Pune Wedding Industry Awards</h4>
               <p className="font-sans text-[11px] text-brand-charcoal/50 uppercase mt-0.5">Winner - Best Bridal Mehendi 2024</p>
               <p className="font-sans text-xs text-brand-charcoal/70 mt-2 leading-relaxed">Recognized for delivering intricate storytelling couple figures and dark organic stain consistency.</p>
             </div>
-          </div>
+          </div>}
 
           <div className="p-6 rounded border border-brand-gold/15 flex items-start space-x-4 bg-brand-beige/10">
             <Award className="w-8 h-8 text-brand-gold shrink-0" />

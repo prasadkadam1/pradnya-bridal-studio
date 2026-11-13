@@ -4,6 +4,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/common/Button';
 import { Link } from 'react-router-dom';
 import { Check, X, MessageSquare, ShieldCheck } from 'lucide-react';
+import { MEHENDI_ENABLED } from '../config/siteFeatures';
 
 interface Package {
   name: string;
@@ -14,7 +15,7 @@ interface Package {
   isPopular?: boolean;
 }
 
-const PACKAGES: Package[] = [
+const MEHENDI_PACKAGES: Package[] = [
   {
     name: "Classic Bridal",
     price: "₹18,000",
@@ -70,6 +71,32 @@ const PACKAGES: Package[] = [
   }
 ];
 
+const MAKEUP_PACKAGES: Package[] = [
+  {
+    name: 'Classic Bridal Look',
+    price: 'Custom quote',
+    desc: 'A polished makeup and hair look for one wedding ceremony.',
+    inclusions: ['HD bridal makeup for one ceremony', 'Skin preparation and lash application', 'One bridal hairstyle', 'Saree or lehenga draping'],
+    exclusions: ['Makeup trial', 'Additional event looks', 'Outstation travel charges'],
+  },
+  {
+    name: 'Wedding & Reception',
+    price: 'Custom quote',
+    desc: 'Coordinated looks for your wedding ceremony and reception.',
+    inclusions: ['HD makeup for wedding and reception', 'Bridal hair styling for both events', 'Makeup trial session', 'Reception touch-up support'],
+    exclusions: ['Additional event looks', 'Outstation travel charges'],
+  },
+  {
+    name: 'Signature Celebration',
+    price: 'Custom quote',
+    desc: 'A complete makeup and styling plan across your wedding celebrations.',
+    inclusions: ['Airbrush or HD makeup for up to three events', 'Custom hairstyle for each event', 'Makeup trial session', 'Premium touch-up kit', 'Saree or lehenga draping'],
+    exclusions: ['Outstation travel charges'],
+  },
+];
+
+const PACKAGES = MEHENDI_ENABLED ? MEHENDI_PACKAGES : MAKEUP_PACKAGES;
+
 export const Packages: React.FC = () => {
   return (
     <div className="bg-brand-ivory min-h-screen py-16 sm:py-24">
@@ -79,10 +106,10 @@ export const Packages: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="font-sans text-xs tracking-widest uppercase text-brand-gold font-bold">Investments</span>
           <h1 className="font-serif text-4xl sm:text-5xl text-brand-green-dark tracking-wide font-bold mt-2">
-            Bridal Packages
+            {MEHENDI_ENABLED ? 'Bridal Packages' : 'Bridal Makeup Packages'}
           </h1>
           <p className="font-sans text-sm text-brand-charcoal/70 mt-3">
-            Compare our curated luxury tiers. Custom combinations can be requested during your consultation.
+            Compare makeup and styling options for your celebrations. Final pricing depends on your event schedule and location.
           </p>
           <Divider variant="simple" />
         </div>
@@ -171,7 +198,7 @@ export const Packages: React.FC = () => {
             <div>
               <h3 className="font-serif text-xl text-brand-gold font-bold">Custom Wedding Bundles</h3>
               <p className="font-sans text-xs text-brand-ivory/80 mt-1 leading-relaxed">
-                Have specific events like Sangeet, Haldi, or Engagement ceremonies spread across multiple dates? Contact us to draft a fully custom, discount-optimized wedding package covering all requirements.
+                Have Sangeet, Haldi, engagement, or reception events across multiple dates? Contact us for a makeup and hair styling plan tailored to your schedule.
               </p>
             </div>
           </div>

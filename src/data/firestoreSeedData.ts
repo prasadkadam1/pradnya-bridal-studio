@@ -1,3 +1,5 @@
+import { STUDIO_NAME } from '../config/siteFeatures';
+
 export interface Service {
   id: string;
   title: string;
@@ -93,7 +95,7 @@ export interface StudioSettings {
 }
 
 export const DEFAULT_SETTINGS: StudioSettings = {
-  studioName: "Pradnya Bridal Studio",
+  studioName: STUDIO_NAME,
   contactPhone: "",
   whatsappPhone: "",
   contactEmail: "pradnyakadam8027@gmail.com",
@@ -125,10 +127,7 @@ export const DEFAULT_SERVICES: Service[] = [
     ],
     duration: "4 - 6 Hours",
     startingPrice: 8500,
-    portfolioExamples: [
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80"
-    ],
+    portfolioExamples: [],
     faqs: [
       { question: "How long before the wedding should I apply bridal mehendi?", answer: "We recommend applying mehendi 2 days (48 hours) prior to the wedding event for the stain to reach its maximum peak color intensity." },
       { question: "Do you bring your own mehendi paste?", answer: "Yes, we prepare our own 100% organic mehendi fresh for every bride, using essential oils that are completely safe for all skin types." }
@@ -154,10 +153,7 @@ export const DEFAULT_SERVICES: Service[] = [
     ],
     duration: "2 - 3 Hours",
     startingPrice: 15000,
-    portfolioExamples: [
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80"
-    ],
+    portfolioExamples: [],
     faqs: [
       { question: "Do you offer makeup trials?", answer: "Yes, we offer paid bridal trials. If you confirm your booking, a portion of the trial fee is adjusted in the final packages." },
       { question: "Will the makeup look heavy in person?", answer: "Not at all. We specialize in dynamic editorial styles that look incredibly natural and lightweight in person while showing up flawless in photography." }
@@ -182,9 +178,7 @@ export const DEFAULT_SERVICES: Service[] = [
     ],
     duration: "1 - 2 Hours",
     startingPrice: 2500,
-    portfolioExamples: [
-      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=800&q=80"
-    ],
+    portfolioExamples: [],
     faqs: [
       { question: "Is Arabic mehendi suitable for engagement ceremonies?", answer: "Absolutely. It's a highly recommended option if you want a classy, less dense design for your fingers and palms during your engagement." }
     ]
@@ -208,9 +202,7 @@ export const DEFAULT_SERVICES: Service[] = [
     ],
     duration: "2 Hours",
     startingPrice: 12000,
-    portfolioExamples: [
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80"
-    ],
+    portfolioExamples: [],
     faqs: [
       { question: "Can we change the hairstyle between the wedding and reception?", answer: "Yes. We offer combo styling packages where our hair stylist can do a quick transformation from a traditional wedding bun/braid to reception open-curls or an elegant updo." }
     ]
@@ -220,7 +212,7 @@ export const DEFAULT_SERVICES: Service[] = [
 export const DEFAULT_PORTFOLIO: PortfolioItem[] = [
   {
     id: "p1",
-    imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "",
     category: "bridal-mehendi",
     title: "Royal Rajasthani Bridal Mehendi",
     description: "Detailed doli and couple portrait theme for our lovely bride from Koregaon Park.",
@@ -230,7 +222,7 @@ export const DEFAULT_PORTFOLIO: PortfolioItem[] = [
   },
   {
     id: "p2",
-    imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "",
     category: "arabic-mehendi",
     title: "Floral Vine Arabic Henna",
     description: "Elegant Arabic trail with negative space shading for bridesmaids.",
@@ -240,7 +232,7 @@ export const DEFAULT_PORTFOLIO: PortfolioItem[] = [
   },
   {
     id: "p3",
-    imageUrl: "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "",
     category: "traditional-mehendi",
     title: "Lotus Mandala Fusion",
     description: "Traditional Lotus circles merged with contemporary grid bands.",
@@ -250,7 +242,7 @@ export const DEFAULT_PORTFOLIO: PortfolioItem[] = [
   },
   {
     id: "p4",
-    imageUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "",
     category: "bridal-makeup",
     title: "Flawless HD Maharashtrian Bride",
     description: "Warm glow base with traditional Nauvari draping and soft gold eye makeup.",
@@ -260,7 +252,7 @@ export const DEFAULT_PORTFOLIO: PortfolioItem[] = [
   },
   {
     id: "p5",
-    imageUrl: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "",
     category: "reception-makeup",
     title: "Dewy Reception Glamour",
     description: "Sleek high-contour layout with shimmering charcoal eyes for an evening reception in Hinjewadi.",
@@ -270,7 +262,7 @@ export const DEFAULT_PORTFOLIO: PortfolioItem[] = [
   },
   {
     id: "p6",
-    imageUrl: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "",
     category: "party-makeup",
     title: "Sleek Party Look & Braided Hair",
     description: "Minimalist base makeup with clean winged liner and messy fishtail braid for a pre-wedding cocktail party.",

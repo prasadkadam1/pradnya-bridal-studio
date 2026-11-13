@@ -66,6 +66,7 @@ export interface Testimonial {
   isFeatured: boolean;
   location: string;
   createdAt: string;
+  status?: 'pending' | 'approved' | 'rejected';
 }
 
 export interface BlogPost {

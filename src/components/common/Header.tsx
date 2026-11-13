@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronRight, Menu, MessageCircle, Phone, X } from 'lucide-react';
+import { Brush, ChevronRight, Menu, MessageCircle, Phone, X } from 'lucide-react';
 import studioLogo from '../../assets/studio-logo.png';
+import { MEHENDI_ENABLED } from '../../config/siteFeatures';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
@@ -12,7 +13,6 @@ const NAV_ITEMS = [
   { path: '/packages', label: 'Packages' },
   { path: '/about', label: 'About' },
   { path: '/testimonials', label: 'Reviews' },
-  { path: '/blog', label: 'Blog' },
   { path: '/contact', label: 'Contact' },
 ];
 
@@ -55,15 +55,10 @@ export const Header: React.FC = () => {
 
   const closeDrawer = () => setIsOpen(false);
 
-  const logoBlock = (className: string, imageClassName: string, titleClassName: string, subtitleClassName: string) => (
+  const logoBlock = (className: string, iconClassName: string, titleClassName: string, subtitleClassName: string) => (
     <Link to="/" onClick={closeDrawer} className={`flex min-w-0 items-center gap-3 ${className}`}>
-      <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-brand-gold/35 bg-brand-beige shadow-[0_6px_16px_rgba(20,53,37,0.08)]">
-        <img
-          src={studioLogo}
-          alt="Pradnya Bridal Beauty Studio logo"
-          className={imageClassName}
-          loading="eager"
-        />
+      <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-brand-gold/35 bg-brand-beige shadow-[0_6px_16px_rgba(20,53,37,0.08)]" aria-hidden="true">
+        {MEHENDI_ENABLED ? <img src={studioLogo} alt="" className="h-full w-full object-cover" /> : <Brush className={`text-brand-gold ${iconClassName}`} />}
       </span>
 
       <span className="flex min-w-0 flex-col justify-center leading-none">
@@ -71,7 +66,7 @@ export const Header: React.FC = () => {
           PRADNYA
         </span>
         <span className={`mt-1 truncate font-sans uppercase text-brand-gold ${subtitleClassName}`}>
-          Bridal Beauty Studio
+          {MEHENDI_ENABLED ? 'Bridal Beauty Studio' : 'Bridal Makeup Studio'}
         </span>
       </span>
     </Link>
@@ -119,7 +114,7 @@ export const Header: React.FC = () => {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between gap-4 lg:hidden">
-          {logoBlock('min-w-0', 'h-12 w-12 object-cover', 'text-[1rem]', 'text-[8px] tracking-[0.3em]')}
+          {logoBlock('min-w-0', 'h-6 w-6', 'text-[1rem]', 'text-[8px] tracking-[0.3em]')}
 
           <button
             type="button"
@@ -134,7 +129,7 @@ export const Header: React.FC = () => {
         </div>
 
         <div className="hidden lg:flex xl:hidden h-20 items-center justify-between gap-4">
-          {logoBlock('min-w-0', 'h-13 w-13 object-cover', 'text-[1.08rem]', 'text-[9px] tracking-[0.28em]')}
+          {logoBlock('min-w-0', 'h-6 w-6', 'text-[1.08rem]', 'text-[9px] tracking-[0.28em]')}
 
           <div className="flex items-center gap-3">
             <a
@@ -178,7 +173,7 @@ export const Header: React.FC = () => {
 
         <div className="hidden xl:flex flex-col gap-4 py-4 xl:py-5">
           <div className="flex items-center justify-between gap-6">
-            {logoBlock('min-w-0', 'h-16 w-16 object-cover', 'text-[1.18rem] 2xl:text-[1.26rem]', 'text-[10px] 2xl:text-[11px] tracking-[0.34em]')}
+            {logoBlock('min-w-0', 'h-8 w-8', 'text-[1.18rem] 2xl:text-[1.26rem]', 'text-[10px] 2xl:text-[11px] tracking-[0.34em]')}
             {actionButtons}
           </div>
 
@@ -227,7 +222,7 @@ export const Header: React.FC = () => {
               <div className="shrink-0 flex items-start justify-between gap-4 border-b border-brand-gold/15 px-6 py-6">
                 {logoBlock(
                   'min-w-0',
-                  'h-14 w-14 object-cover',
+                  'h-7 w-7',
                   'text-[1.02rem]',
                   'text-[9px] tracking-[0.3em]'
                 )}
@@ -244,7 +239,7 @@ export const Header: React.FC = () => {
 
               <div className="shrink-0 border-b border-brand-gold/10 px-6 py-5">
                 <p className="max-w-[16rem] font-sans text-[11px] leading-5 text-brand-charcoal/65">
-                  Luxury bridal mehendi, makeup, hair styling, and saree draping for Pune brides.
+                  Bridal makeup, hair styling, and saree draping for Pune brides.
                 </p>
               </div>
 

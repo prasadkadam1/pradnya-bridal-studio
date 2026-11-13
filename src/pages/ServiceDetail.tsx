@@ -1,14 +1,50 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useService } from '../hooks/useFirestore';
 import { Button } from '../components/common/Button';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Clock, IndianRupee, MessageCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import type { ServiceFaq, ServiceProcessStep } from '../types/studio';
+import updateSEOMetadata, { getCanonicalUrl } from '../services/seo';
+import { getServiceSchema } from '../utils/schemaMarkup';
+import { isPublicServiceEnabled, MEHENDI_ENABLED } from '../config/siteFeatures';
 
 export const ServiceDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: service, isLoading } = useService(slug || '');
+
+  useEffect(() => {
+    if (!slug) return;
+    const canonicalUrl = getCanonicalUrl(`/services/${slug}`);
+    if (!service || !isPublicServiceEnabled(service)) {
+      updateSEOMetadata({
+        title: MEHENDI_ENABLED ? `${slug.replaceAll('-', ' ')} Bridal Beauty Service` : 'Bridal Makeup Services in Pune',
+        description: MEHENDI_ENABLED ? 'Explore bridal beauty service details, pricing, and booking information from Pradnya Bridal Studio in Pune.' : 'Explore bridal makeup, reception looks, and styling services from Pradnya Bridal Makeup Studio in Pune.',
+        canonicalUrl,
+        robots: !isLoading || (service && !isPublicServiceEnabled(service)) ? 'noindex,follow' : 'index,follow,max-image-preview:large',
+      });
+      document.getElementById('service-page-schema')?.remove();
+      return;
+    }
+    updateSEOMetadata({
+      title: `${service.title} in Pune`,
+      description: service.shortDescription,
+      ogImage: service.portfolioExamples?.[0] || undefined,
+      canonicalUrl,
+    });
+    const schema = document.createElement('script');
+    schema.type = 'application/ld+json';
+    schema.id = 'service-page-schema';
+    schema.textContent = JSON.stringify(getServiceSchema({
+      title: service.title,
+      description: service.shortDescription,
+      url: canonicalUrl,
+      price: service.startingPrice,
+    }));
+    document.getElementById('service-page-schema')?.remove();
+    document.head.appendChild(schema);
+    return () => document.getElementById('service-page-schema')?.remove();
+  }, [service, slug, isLoading]);
 
   if (isLoading) {
     return (
@@ -21,7 +57,7 @@ export const ServiceDetail: React.FC = () => {
     );
   }
 
-  if (!service) {
+  if (!service || !isPublicServiceEnabled(service)) {
     return (
       <div className="min-h-screen bg-brand-ivory flex flex-col items-center justify-center px-4">
         <h2 className="font-serif text-2xl text-brand-green-dark mb-4">Service not found</h2>
@@ -81,11 +117,13 @@ export const ServiceDetail: React.FC = () => {
           {/* Right Showcase Image */}
           <div className="lg:col-span-5 flex justify-center">
             <div className="w-80 h-96 rounded-t-full border-4 border-brand-gold/30 overflow-hidden shadow-2xl">
-              <img 
-                src={service.portfolioExamples?.[0] || "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=400&q=80"} 
-                alt={service.title} 
-                className="w-full h-full object-cover"
-              />
+              {service.portfolioExamples?.[0] ? (
+                <img src={service.portfolioExamples[0]} alt={service.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-brand-ivory/10 px-6 text-center">
+                  <span className="font-sans text-xs uppercase tracking-widest text-brand-gold">Image coming soon</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -142,7 +180,7 @@ export const ServiceDetail: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {service.portfolioExamples.map((url: string, i: number) => (
                   <div key={i} className="rounded border border-brand-gold/15 overflow-hidden shadow aspect-[4/3]">
-                    <img src={url} alt={`Preview ${i}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                    <img src={url} alt={`${service.title} portfolio image ${i + 1}`} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                   </div>
                 ))}
               </div>

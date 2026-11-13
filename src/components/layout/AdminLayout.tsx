@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { 
   LayoutDashboard, Users, ImagePlus, CalendarDays, LogOut, Menu, X, ClipboardList, FileText, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { setRobotsDirectives } from '../../services/seo';
 
 const ADMIN_LINKS = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -20,6 +21,11 @@ export const AdminLayout: React.FC = () => {
   const { user, loading, logout, isMockMode } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setRobotsDirectives('noindex,nofollow');
+    return () => setRobotsDirectives('index,follow,max-image-preview:large');
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -47,7 +53,8 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
-  if (!user) {
+  // Keep the UI gate aligned with the verified role check in AuthContext.
+  if (!user || user.role !== 'admin') {
     return <Navigate to="/admin/login" replace />;
   }
 
@@ -65,7 +72,7 @@ export const AdminLayout: React.FC = () => {
       <header className="md:hidden w-full bg-brand-green-dark text-brand-ivory flex justify-between items-center px-4 sm:px-6 py-4 border-b border-brand-gold/20 shadow-md">
         <div className="flex flex-col">
           <span className="font-serif text-lg tracking-wider text-brand-gold font-bold">
-            PRADNYA ADMIN
+            PRADNYA MAKEUP ADMIN
           </span>
           {isMockMode && (
             <span className="font-sans text-[8px] uppercase tracking-widest text-brand-gold-champagne font-bold">
@@ -85,10 +92,10 @@ export const AdminLayout: React.FC = () => {
       <aside className="hidden md:flex flex-col w-72 bg-brand-green-dark text-brand-ivory border-r border-brand-gold/20 shadow-xl shrink-0">
         <div className="px-6 py-8 border-b border-brand-gold/15 flex flex-col">
           <span className="font-serif text-xl tracking-wider text-brand-gold font-bold">
-            PRADNYA BRIDAL
+            PRADNYA MAKEUP
           </span>
           <span className="font-sans text-[10px] tracking-widest text-brand-gold-champagne uppercase font-medium mt-1">
-            Studio Admin Panel
+            Bridal Makeup Admin Panel
           </span>
           {isMockMode && (
             <span className="inline-block mt-2 self-start bg-brand-gold/10 text-brand-gold text-[9px] px-2 py-0.5 rounded font-sans uppercase font-bold border border-brand-gold/20">
@@ -150,7 +157,7 @@ export const AdminLayout: React.FC = () => {
                     PRADNYA
                   </span>
                   <span className="font-sans text-[8px] uppercase text-brand-gold-champagne tracking-widest">
-                    Studio Management
+                    Makeup Studio Management
                   </span>
                 </div>
                 <button

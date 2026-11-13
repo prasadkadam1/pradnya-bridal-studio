@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { isFirebaseConfigured, auth, db } from '../config/firebase';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import type { AuthUser } from '../types/studio';
 
@@ -14,108 +14,118 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+const MOCK_ADMIN = { uid: 'mock-admin-uid', email: 'admin@pradnya.com', role: 'admin' as const };
 const ADMIN_ACCESS_ERROR =
-  'This account is not authorized for admin access. In Firestore, create users/{your-uid} with role set to "admin" (document ID must be your Firebase UID, not your email).';
+  'This account is not authorized for admin access. Create a users/{your-uid} document in Firestore with role set to "admin" (the document ID must be your Firebase UID).';
 
-const resolveAdminUser = async (firebaseUser: { uid: string; email: string | null }) => {
-  if (!db) {
-    throw new Error('Firestore is not available. Check your Firebase configuration.');
-  }
+// A client session is admitted only after both Firebase Authentication and the
+// matching Firestore role document have been verified.
+const resolveAdminUser = async (firebaseUser: User): Promise<AuthUser> => {
+  if (!db) throw new Error('Firestore is unavailable. Check the Firebase configuration.');
 
   const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-
-  if (userDoc.exists() && userDoc.data()?.role === 'admin') {
-    return {
-      uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      role: 'admin' as const,
-    };
-  }
-
-  if (auth) {
-    await signOut(auth);
+  if (userDoc.exists() && userDoc.data().role === 'admin') {
+    return { uid: firebaseUser.uid, email: firebaseUser.email, role: 'admin' };
   }
 
   throw new Error(ADMIN_ACCESS_ERROR);
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const isMockMode = !isFirebaseConfigured;
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (!isMockMode) {
-      return null;
-    }
-
-    const savedUser = sessionStorage.getItem('mock_admin_user');
-    if (!savedUser) {
-      return null;
-    }
-
+const clearUnauthorizedSession = async () => {
+  if (auth?.currentUser) {
     try {
-      return JSON.parse(savedUser) as AuthUser;
-    } catch {
-      sessionStorage.removeItem('mock_admin_user');
-      return null;
+      await signOut(auth);
+    } catch (error) {
+      console.error('Could not clear unauthorized Firebase session:', error);
     }
+  }
+};
+
+const isValidMockSession = (value: unknown): value is AuthUser => {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<AuthUser>;
+  return candidate.uid === MOCK_ADMIN.uid && candidate.email === MOCK_ADMIN.email && candidate.role === 'admin';
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Mock credentials exist only for local development. A production build with
+  // missing/broken Firebase configuration fails closed instead of granting demo access.
+  const isMockMode = import.meta.env.DEV && !isFirebaseConfigured;
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    if (!isMockMode) return null;
+    try {
+      const savedUser = sessionStorage.getItem('mock_admin_user');
+      if (!savedUser) return null;
+      const parsed: unknown = JSON.parse(savedUser);
+      if (isValidMockSession(parsed)) return parsed;
+    } catch {
+      // Clear malformed local demo sessions below.
+    }
+    sessionStorage.removeItem('mock_admin_user');
+    return null;
   });
-  const [loading, setLoading] = useState(() => !isMockMode);
+  const [loading, setLoading] = useState(() => !isMockMode && !!auth);
 
   useEffect(() => {
-    if (!isMockMode && auth) {
-      const unsubscribe = onAuthStateChanged(auth!, async (firebaseUser) => {
-        try {
-          if (firebaseUser) {
-            try {
-              setUser(await resolveAdminUser(firebaseUser));
-            } catch (error) {
-              console.warn(
-                error instanceof Error ? error.message : 'Admin access check failed.'
-              );
-              setUser(null);
-            }
-          } else {
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('Error resolving admin session:', error);
-          setUser(null);
-        } finally {
-          setLoading(false);
-        }
-      });
-      return unsubscribe;
-    } else {
+    if (isMockMode) return undefined;
+    if (!auth) {
+      setUser(null);
+      setLoading(false);
       return undefined;
     }
+
+    let active = true;
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
+      try {
+        if (!firebaseUser) {
+          if (active) setUser(null);
+          return;
+        }
+        const adminUser = await resolveAdminUser(firebaseUser);
+        if (active) setUser(adminUser);
+      } catch (error) {
+        if (active) setUser(null);
+        if (error instanceof Error && error.message === ADMIN_ACCESS_ERROR) {
+          await clearUnauthorizedSession();
+        } else {
+          console.error('Admin role verification failed:', error);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [isMockMode]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
+    setUser(null);
     try {
-      if (!isMockMode && auth) {
-        const credential = await signInWithEmailAndPassword(auth!, email, password);
-        setUser(await resolveAdminUser(credential.user));
-      } else if (email === 'admin@pradnya.com' && password === 'admin123') {
-        const mockUser: AuthUser = {
-          uid: 'mock-admin-uid',
-          email: 'admin@pradnya.com',
-          role: 'admin',
-        };
-        sessionStorage.setItem('mock_admin_user', JSON.stringify(mockUser));
-        setUser(mockUser);
-      } else {
-        throw new Error('Invalid admin credentials. Use admin@pradnya.com / admin123 for Mock Mode.');
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error && error.message === ADMIN_ACCESS_ERROR) {
-        throw error;
+      if (isMockMode) {
+        if (email.trim().toLowerCase() !== MOCK_ADMIN.email || password !== 'admin123') {
+          throw new Error('Invalid demo credentials. Use the credentials shown for local development.');
+        }
+        sessionStorage.setItem('mock_admin_user', JSON.stringify(MOCK_ADMIN));
+        setUser(MOCK_ADMIN);
+        return;
       }
 
-      throw new Error(
-        error instanceof Error ? error.message : 'Authentication failed',
-        { cause: error }
-      );
+      if (!isFirebaseConfigured || !auth || !db) {
+        throw new Error('Admin sign-in is unavailable because Firebase is not fully configured.');
+      }
+
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      try {
+        setUser(await resolveAdminUser(credential.user));
+      } catch (error) {
+        await clearUnauthorizedSession();
+        throw error;
+      }
     } finally {
       setLoading(false);
     }
@@ -123,13 +133,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     setLoading(true);
-    if (!isMockMode && auth) {
-      await signOut(auth!);
-    } else {
-      sessionStorage.removeItem('mock_admin_user');
+    try {
       setUser(null);
+      if (isMockMode) {
+        sessionStorage.removeItem('mock_admin_user');
+      } else if (auth) {
+        await signOut(auth);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -141,8 +154,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

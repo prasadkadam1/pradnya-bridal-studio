@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Instagram, Heart, MessageCircle } from 'lucide-react';
+import { MEHENDI_ENABLED, STUDIO_NAME } from '../../config/siteFeatures';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -27,11 +28,11 @@ export const Footer: React.FC = () => {
                 PRADNYA
               </span>
               <span className="font-sans text-[10px] tracking-[0.3em] text-brand-gold/80 uppercase mt-0.5">
-                Bridal Beauty Studio
+                {MEHENDI_ENABLED ? 'Bridal Beauty Studio' : 'Bridal Makeup Studio'}
               </span>
             </Link>
             <p className="font-sans text-sm text-brand-ivory/70 leading-relaxed">
-              Elevating your wedding beauty with our exquisite storytelling Mehendi patterns and radiant bridal makeup. Pune's premier destination for luxury bridal styling.
+              Bridal makeup, hair styling, and occasion looks crafted for modern Pune brides.
             </p>
             <div className="flex items-center space-x-3 pt-2">
               <a 
@@ -57,7 +58,7 @@ export const Footer: React.FC = () => {
                 <Link to="/services" className="hover:text-brand-gold transition-colors duration-300">Our Services</Link>
               </li>
               <li>
-                <Link to="/portfolio" className="hover:text-brand-gold transition-colors duration-300">Pinterest Portfolio</Link>
+                <Link to="/portfolio" className="hover:text-brand-gold transition-colors duration-300">Makeup Portfolio</Link>
               </li>
               <li>
                 <Link to="/before-after" className="hover:text-brand-gold transition-colors duration-300">Transformations</Link>
@@ -66,7 +67,6 @@ export const Footer: React.FC = () => {
                 <Link to="/packages" className="hover:text-brand-gold transition-colors duration-300">Packages</Link>
               </li>
               <li>
-                <Link to="/blog" className="hover:text-brand-gold transition-colors duration-300">Bridal Beauty Blog</Link>
               </li>
             </ul>
           </div>
@@ -75,12 +75,8 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="font-serif text-lg text-brand-gold tracking-wide mb-6">Our Specialities</h3>
             <ul className="space-y-3 text-sm font-sans text-brand-ivory/80">
-              <li>
-                <Link to="/services/bridal-mehendi" className="hover:text-brand-gold transition-colors duration-300">Traditional Bridal Mehendi</Link>
-              </li>
-              <li>
-                <Link to="/services/arabic-mehendi" className="hover:text-brand-gold transition-colors duration-300">Modern Arabic Henna</Link>
-              </li>
+              {MEHENDI_ENABLED && <li><Link to="/services/bridal-mehendi" className="hover:text-brand-gold transition-colors duration-300">Traditional Bridal Mehendi</Link></li>}
+              {MEHENDI_ENABLED && <li><Link to="/services/arabic-mehendi" className="hover:text-brand-gold transition-colors duration-300">Modern Arabic Henna</Link></li>}
               <li>
                 <Link to="/services/bridal-makeup" className="hover:text-brand-gold transition-colors duration-300">HD Bridal Makeup</Link>
               </li>
@@ -115,7 +111,7 @@ export const Footer: React.FC = () => {
               <li className="flex items-center space-x-3">
                 <MessageCircle className="w-5 h-5 text-brand-gold shrink-0" />
                 <a
-                  href="https://wa.me/917040496065?text=Hi%20Pradnya%20Studio%20Team%2C%20I%20would%20like%20to%20book%20a%20bridal%20consultation."
+                  href="https://wa.me/917040496065?text=Hi%20Pradnya%20Bridal%20Makeup%20Studio%2C%20I%20would%20like%20to%20book%20a%20bridal%20makeup%20consultation."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-brand-gold transition-colors"
@@ -143,7 +139,7 @@ export const Footer: React.FC = () => {
 
         {/* Footer Bottom copyright */}
         <div className="border-t border-brand-gold/15 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs font-sans text-brand-ivory/60">
-          <p>© {currentYear} Pradnya Bridal Beauty Studio. All Rights Reserved.</p>
+          <p>© {currentYear} {STUDIO_NAME}. All Rights Reserved.</p>
           <p className="flex items-center mt-4 sm:mt-0">
             Handcrafted with <Heart className="w-3.5 h-3.5 text-brand-gold fill-brand-gold mx-1" /> for Pune Brides.
           </p>

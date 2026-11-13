@@ -1,13 +1,55 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useBlog } from '../hooks/useFirestore';
 import { Button } from '../components/common/Button';
 import { Divider } from '../components/common/Divider';
 import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
+import updateSEOMetadata, { getCanonicalUrl } from '../services/seo';
+import { getArticleSchema } from '../utils/schemaMarkup';
 
 export const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: post, isLoading } = useBlog(slug || '');
+
+  useEffect(() => {
+    if (!slug) return;
+    const canonicalUrl = getCanonicalUrl(`/blog/${slug}`);
+    if (!post) {
+      updateSEOMetadata({
+        title: `${slug.replaceAll('-', ' ')} | Bridal Beauty Advice`,
+        description: 'Read bridal beauty advice and wedding preparation tips from Pradnya Bridal Studio in Pune.',
+        canonicalUrl,
+        robots: !isLoading ? 'noindex,follow' : 'index,follow,max-image-preview:large',
+      });
+      document.getElementById('blog-post-schema')?.remove();
+      return;
+    }
+    const canonicalUrlForPost = getCanonicalUrl(`/blog/${post.id}`);
+    const title = post.metaTitle || post.title;
+    const description = post.metaDescription || post.excerpt;
+    updateSEOMetadata({
+      title,
+      description,
+      ogType: 'article',
+      ogImage: post.coverImage || undefined,
+      canonicalUrl: canonicalUrlForPost,
+      robots: post.published ? 'index,follow,max-image-preview:large' : 'noindex,nofollow',
+    });
+    const schema = document.createElement('script');
+    schema.type = 'application/ld+json';
+    schema.id = 'blog-post-schema';
+    schema.textContent = JSON.stringify(getArticleSchema({
+      title,
+      description,
+      url: canonicalUrlForPost,
+      image: post.coverImage,
+      datePublished: post.createdAt,
+      author: post.author,
+    }));
+    document.getElementById('blog-post-schema')?.remove();
+    document.head.appendChild(schema);
+    return () => document.getElementById('blog-post-schema')?.remove();
+  }, [post, slug, isLoading]);
 
   if (isLoading) {
     return (

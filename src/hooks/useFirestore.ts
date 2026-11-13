@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dbService } from '../services/dbService';
-import type { BlogPost, Inquiry, Service } from '../types/studio';
+import type { BlogPost, Inquiry, PortfolioItem, Service } from '../types/studio';
 
 // SERVICES
 export const useServices = () => {
@@ -67,11 +67,26 @@ export const useDeletePortfolio = () => {
   });
 };
 
+export const useUpdatePortfolio = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<PortfolioItem> }) => dbService.updatePortfolioItem(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['portfolio'] }),
+  });
+};
+
 // TESTIMONIALS
 export const useTestimonials = () => {
   return useQuery({
     queryKey: ['testimonials'],
     queryFn: dbService.getTestimonials
+  });
+};
+
+export const usePublicTestimonials = () => {
+  return useQuery({
+    queryKey: ['public-testimonials'],
+    queryFn: dbService.getPublicTestimonials
   });
 };
 
@@ -81,6 +96,19 @@ export const useAddTestimonial = () => {
     mutationFn: dbService.addTestimonial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      queryClient.invalidateQueries({ queryKey: ['public-testimonials'] });
+    }
+  });
+};
+
+export const useUpdateTestimonialStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'pending' | 'approved' | 'rejected' }) =>
+      dbService.updateTestimonialStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      queryClient.invalidateQueries({ queryKey: ['public-testimonials'] });
     }
   });
 };
@@ -91,6 +119,7 @@ export const useDeleteTestimonial = () => {
     mutationFn: dbService.deleteTestimonial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      queryClient.invalidateQueries({ queryKey: ['public-testimonials'] });
     }
   });
 };

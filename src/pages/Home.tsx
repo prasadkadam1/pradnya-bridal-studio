@@ -11,35 +11,37 @@ import {
 import {
   useServices,
   usePortfolio,
-  useTestimonials,
+  usePublicTestimonials,
 } from "../hooks/useFirestore";
 import { Divider } from "../components/common/Divider";
 import { Button } from "../components/common/Button";
 import { GlassCard } from "../components/ui/GlassCard";
+import { hasPortfolioImage } from '../utils/portfolioImages';
+import { DEFAULT_EVENT_TYPE, isPublicPortfolioEnabled, isPublicServiceEnabled, isPublicTestimonialEnabled, MEHENDI_ENABLED } from '../config/siteFeatures';
 
 export const Home: React.FC = () => {
   const { data: services } = useServices();
   const { data: portfolio } = usePortfolio();
-  const { data: testimonials } = useTestimonials();
+  const { data: testimonials } = usePublicTestimonials();
 
   const featuredPortfolio =
-    portfolio?.filter((item) => item.isFeatured).slice(0, 3) || [];
+    portfolio?.filter((item) => item.isFeatured && isPublicPortfolioEnabled(item)).slice(0, 3) || [];
   const featuredTestimonials =
-    testimonials?.filter((item) => item.isFeatured).slice(0, 3) || [];
+    testimonials?.filter((item) => item.isFeatured && isPublicTestimonialEnabled(item)).slice(0, 3) || [];
 
   const faqs = [
     {
-      q: "How far in advance should I book my bridal makeup and mehendi?",
+      q: MEHENDI_ENABLED ? "How far in advance should I book my bridal makeup and mehendi?" : "How far in advance should I book my bridal makeup?",
       a: "We recommend booking 6 to 12 months in advance, especially for peak wedding seasons in Maharashtra (November to May). Dates fill up extremely quickly.",
     },
     {
       q: "Do you travel to the wedding venue outside Pune?",
       a: "Yes, we travel across Maharashtra and nearby states for bridal bookings. Travel and accommodation charges are applicable depending on the location.",
     },
-    {
-      q: "Do you prepare your own mehendi paste?",
-      a: "Absolutely. We prepare fresh, 100% organic henna paste using pure eucalyptus and lavender oils, ensuring a deep stain and absolute skin safety.",
-    },
+    ...(MEHENDI_ENABLED ? [{
+        q: "Do you prepare your own mehendi paste?",
+        a: "Absolutely. We prepare fresh, 100% organic henna paste using pure eucalyptus and lavender oils, ensuring a deep stain and absolute skin safety.",
+      }] : []),
     {
       q: "Can I book a trial session for my bridal makeup?",
       a: "Yes! We offer paid trial sessions for bridal makeup. During the trial, we finalize your look, skin tone match, and hairstyle, which is then recorded for the wedding day.",
@@ -60,7 +62,7 @@ export const Home: React.FC = () => {
     {
       step: "03",
       title: "Trial Session",
-      desc: "Experience a hands-on makeup trial and select custom henna portrait drawings.",
+      desc: MEHENDI_ENABLED ? "Experience a hands-on makeup trial and select custom henna portrait drawings." : "Experience a hands-on makeup trial and finalize your bridal look, products, and hairstyle.",
     },
     {
       step: "04",
@@ -94,7 +96,7 @@ export const Home: React.FC = () => {
             >
               <Star className="w-3.5 h-3.5 fill-brand-gold text-brand-gold" />
               <span className="font-sans text-[10px] sm:text-xs tracking-widest uppercase text-brand-gold font-bold">
-                Pune's Top Luxury Bridal Artist
+                Pune Bridal Makeup Artist
               </span>
             </motion.div>
 
@@ -106,7 +108,7 @@ export const Home: React.FC = () => {
             >
               Luxury Bridal <br />
               <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-brand-gold-champagne via-brand-gold to-brand-gold-champagne font-serif italic">
-                Mehendi & Makeup
+                {MEHENDI_ENABLED ? 'Mehendi & Makeup' : 'Bridal Makeup'}
               </span>
             </motion.h1>
 
@@ -116,9 +118,9 @@ export const Home: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="font-sans text-sm sm:text-base text-brand-ivory/80 max-w-xl leading-relaxed mx-auto lg:mx-0"
             >
-              Helping modern brides look their absolute best on their most
-              special day with customized storytelling henna patterns and
-              radiant, high-definition makeup.
+              {MEHENDI_ENABLED
+                ? 'Helping modern brides look their best with customized mehendi artistry and radiant, high-definition makeup.'
+                : 'Helping modern brides feel their best with camera-ready bridal makeup, refined hair styling, and a look tailored to every celebration.'}
             </motion.p>
 
             <motion.div
@@ -189,7 +191,7 @@ export const Home: React.FC = () => {
                 </Button>
               </Link>
               <a
-                href="https://wa.me/917040496065?text=Hi%20Pradnya,%20I'm%20interested%20in%20your%20Bridal%20Mehendi%20and%20Makeup%20services.%20Please%20send%20packages."
+                href={`https://wa.me/917040496065?text=${encodeURIComponent(`Hi Pradnya, I'm interested in ${DEFAULT_EVENT_TYPE}. Please send me the details.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center space-x-2 py-3.5 px-6 rounded border border-green-500 text-green-400 text-xs uppercase tracking-widest font-semibold hover:bg-green-500/10 transition-all duration-300"
@@ -209,8 +211,8 @@ export const Home: React.FC = () => {
               className="relative w-full max-w-[320px] sm:max-w-[380px] lg:w-80 h-[360px] sm:h-[440px] lg:h-[480px] rounded-t-full border-4 border-brand-gold/40 overflow-hidden shadow-2xl"
             >
               <img
-                src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80"
-                alt="Intricate Indian Bridal Mehendi and Jewelry"
+                src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80"
+                alt="Bridal makeup look with refined eye makeup and glowing skin"
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-green-dark/45 to-transparent" />
@@ -266,10 +268,10 @@ export const Home: React.FC = () => {
 
             <div className="flex flex-col items-center">
               <span className="font-serif text-3xl font-bold text-brand-green-dark">
-                100%
+                {MEHENDI_ENABLED ? '100%' : 'HD + Airbrush'}
               </span>
               <span className="font-sans text-[11px] uppercase tracking-wider text-brand-charcoal/70 mt-1">
-                Organic Henna
+                {MEHENDI_ENABLED ? 'Organic Henna' : 'Bridal Makeup Techniques'}
               </span>
             </div>
 
@@ -300,21 +302,20 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {services?.slice(0, 4).map((service) => (
+            {services?.filter(isPublicServiceEnabled).slice(0, 4).map((service) => (
               <GlassCard
                 key={service.id}
                 className="flex flex-col h-full bg-brand-beige/20"
                 hoverEffect={true}
               >
                 <div className="relative h-48 w-full rounded overflow-hidden mb-6 border border-brand-gold/15">
-                  <img
-                    src={
-                      service.portfolioExamples?.[0] ||
-                      "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=400&q=80"
-                    }
-                    alt={service.title}
-                    className="w-full h-full object-cover"
-                  />
+                  {service.portfolioExamples?.[0] ? (
+                    <img src={service.portfolioExamples[0]} alt={service.title} loading="lazy" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-brand-green-dark/5 px-4 text-center">
+                      <span className="font-sans text-[9px] uppercase tracking-widest text-brand-green-dark/55">Image coming soon</span>
+                    </div>
+                  )}
                   <div className="absolute top-3 left-3 bg-brand-green-dark text-brand-gold text-[9px] uppercase tracking-widest px-2.5 py-1 rounded font-sans font-bold shadow-md">
                     {service.category}
                   </div>
@@ -371,8 +372,7 @@ export const Home: React.FC = () => {
               Recent Masterpieces
             </h2>
             <p className="font-sans text-sm text-brand-charcoal/70 mt-3">
-              Explore our curated portfolio showing real brides from Pune,
-              highlighting our attention to detail.
+              Explore bridal makeup looks, reception glam, and real transformations created for Pune brides.
             </p>
             <Divider variant="simple" />
           </div>
@@ -381,13 +381,13 @@ export const Home: React.FC = () => {
             {featuredPortfolio.map((item) => (
               <div
                 key={item.id}
-                className="group relative rounded overflow-hidden shadow-lg border border-brand-gold/20 bg-brand-ivory aspect-[3/4]"
+                className="group relative rounded overflow-hidden shadow-lg border border-brand-gold/20 bg-brand-ivory aspect-[9/16]"
               >
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
+                {hasPortfolioImage(item.imageUrl) ? (
+                  <img src={item.imageUrl} alt={item.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-brand-green-dark/5 px-4 text-center"><span className="font-sans text-[10px] uppercase tracking-widest text-brand-green-dark/55">Image coming soon</span></div>
+                )}
 
                 {/* Gold Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-green-dark/85 via-brand-green-dark/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6" />
@@ -410,7 +410,7 @@ export const Home: React.FC = () => {
 
           <div className="text-center mt-12">
             <Link to="/portfolio">
-              <Button variant="primary">Browse Pinterest Gallery</Button>
+              <Button variant="primary">Explore Makeup Portfolio</Button>
             </Link>
           </div>
         </div>
@@ -563,9 +563,9 @@ export const Home: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80",
+              "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=80",
               "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80",
-              "https://images.unsplash.com/photo-1605001011156-cbf0b0f67a51?auto=format&fit=crop&w=400&q=80",
+              "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=80",
               "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80",
               "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=80",
               "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80",
@@ -575,7 +575,7 @@ export const Home: React.FC = () => {
                 href="https://instagram.com/pradnyabridal"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative aspect-square rounded overflow-hidden border border-brand-gold/10 block group shadow-sm"
+                className="relative aspect-[9/16] rounded overflow-hidden border border-brand-gold/10 block group shadow-sm"
               >
                 <img
                   src={img}
@@ -607,8 +607,7 @@ export const Home: React.FC = () => {
           </h2>
 
           <p className="font-sans text-sm sm:text-base text-brand-ivory/80 leading-relaxed max-w-xl mb-8">
-            Ensure your wedding date is locked with the elite bridal studio in
-            Pune. Secure your spots for Mehendi, Makeup, and Hair styling.
+            Plan your bridal makeup, hair styling, and occasion looks with Pradnya Bridal Makeup Studio in Pune.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
