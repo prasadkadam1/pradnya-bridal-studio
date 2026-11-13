@@ -100,8 +100,8 @@ export const DEFAULT_SETTINGS: StudioSettings = {
   whatsappPhone: "",
   contactEmail: "pradnyakadam8027@gmail.com",
   instagramUrl: "https://instagram.com/pradnyabridal",
-  address: "Siddharth Heights, opposite Balgandharva, J.M. Road, Shivajinagar, Pune - 411005",
-  googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3783.080517551042!2d73.84439061489283!3d18.525287687405234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c07be1555555%3A0xe5cdcdad22b7a9de!2sShivajinagar%2C%20Pune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1680000000000!5m2!1sen!2sin",
+  address: "Pune, Maharashtra",
+  googleMapsEmbedUrl: "https://maps.google.com/maps?q=Pune%2C%20Maharashtra&output=embed",
   experienceYears: 8,
   bridesServedCount: 1200
 };

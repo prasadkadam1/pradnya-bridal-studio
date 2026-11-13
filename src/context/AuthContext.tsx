@@ -68,11 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (isMockMode) return undefined;
-    if (!auth) {
-      setUser(null);
-      setLoading(false);
-      return undefined;
-    }
+    if (!auth) return undefined;
 
     let active = true;
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {

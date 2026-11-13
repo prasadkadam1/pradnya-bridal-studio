@@ -203,7 +203,7 @@ export const BlogPost: React.FC = () => {
           <div>
             <h3 className="font-serif text-xl text-brand-green-dark font-bold">Prepare for Your Big Day</h3>
             <p className="font-sans text-xs text-brand-charcoal/70 mt-1 leading-relaxed">
-              Let us help you design your dream bridal look. Book a personal makeup and mehendi trial at our Shivajinagar studio.
+              Let us help you design your dream bridal look. Book a personal makeup and mehendi trial in Pune, Maharashtra.
             </p>
           </div>
 

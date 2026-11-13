@@ -107,7 +107,7 @@ export const Footer: React.FC = () => {
               <li className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-brand-gold shrink-0 mt-0.5" />
                 <span className="leading-relaxed">
-                  Siddharth Heights, opposite Balgandharva, J.M. Road, Shivajinagar, Pune - 411005
+                  Pune, Maharashtra
                 </span>
               </li>
               <li className="flex items-center space-x-3">

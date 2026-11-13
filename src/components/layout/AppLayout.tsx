@@ -48,7 +48,7 @@ export const AppLayout: React.FC = () => {
       },
       '/contact': {
         title: `Contact ${STUDIO_NAME}`,
-        description: 'Send an inquiry, call, WhatsApp, or find the studio in Shivajinagar, Pune.',
+        description: 'Send an inquiry, call, WhatsApp, or find the studio in Pune, Maharashtra.',
       },
       '/availability': {
         title: 'Check Bridal Artist Availability',

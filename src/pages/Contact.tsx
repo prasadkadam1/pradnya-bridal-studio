@@ -100,7 +100,7 @@ export const Contact: React.FC = () => {
                 <div>
                   <h4 className="font-serif text-base text-brand-green font-bold">Studio & Service Areas</h4>
                   <p className="font-sans text-xs text-brand-charcoal/80 mt-1.5 leading-relaxed">
-                    <span className="font-semibold text-brand-charcoal">Studio:</span> Siddharth Heights, opposite Balgandharva, J.M. Road, Shivajinagar, Pune - 411005
+                    <span className="font-semibold text-brand-charcoal">Studio:</span> Pune, Maharashtra
                   </p>
                   <p className="font-sans text-xs text-brand-charcoal/80 mt-2 leading-relaxed">
                     <span className="font-semibold text-brand-charcoal">We serve brides across:</span> entire Pune, PCMC (Pimpri-Chinchwad), Talegaon Dabhade, Hinjewadi, Wakad, Baner, Chakan, Nigdi, Kothrud, Koregaon Park, and all nearby wedding locations.
@@ -113,8 +113,8 @@ export const Contact: React.FC = () => {
                 <div>
                   <h4 className="font-serif text-base text-brand-green font-bold">Studio Contact</h4>
                   <p className="font-sans text-xs text-brand-charcoal/80 mt-1">
-                    For privacy, the owner&apos;s personal number is not displayed publicly.<br />
-                    Please use WhatsApp or the consultation form to reach the studio.
+                    <a href="tel:+917040496065" className="font-semibold hover:underline">Call Studio</a>
+                    {' '}or use WhatsApp to reach the studio.
                   </p>
                 </div>
               </div>
@@ -164,7 +164,7 @@ export const Contact: React.FC = () => {
             <div className="rounded overflow-hidden border border-brand-gold/20 shadow-md aspect-[4/3] sm:aspect-[16/10]">
               <iframe
                 title="Pradnya Bridal Makeup Studio Google Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3783.080517551042!2d73.84439061489283!3d18.525287687405234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c07be1555555%3A0xe5cdcdad22b7a9de!2sShivajinagar%2C%20Pune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1680000000000!5m2!1sen!2sin"
+                src="https://maps.google.com/maps?q=Pune%2C%20Maharashtra&output=embed"
                 className="w-full h-full border-0"
                 allowFullScreen={true}
                 loading="lazy"

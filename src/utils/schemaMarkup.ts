@@ -20,16 +20,9 @@ export const getLocalBusinessSchema = () => {
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Siddharth Heights, opposite Balgandharva, J.M. Road, Shivajinagar",
       "addressLocality": "Pune",
       "addressRegion": "Maharashtra",
-      "postalCode": "411005",
       "addressCountry": "IN"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 18.525287,
-      "longitude": 73.844390
     },
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
